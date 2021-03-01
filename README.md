@@ -1,6 +1,6 @@
 # NVAprilTags ROS2 Node
 
-This ROS2 node uses the NVIDIA GPU-accelerated AprilTags library to detect AprilTags in images and publish their poses, ids, and additional metadata. This has been tested on ROS2 (Foxy) and should run on x86_64 and aarch64 (Jetson hardware). It is modeled after and comparable to the ROS2 node for CPU AprilTags detection here: https://github.com/christianrauch/apriltag_ros.git
+This ROS2 node uses the NVIDIA GPU-accelerated AprilTags library to detect AprilTags in images and publish their poses, ids, and additional metadata. This has been tested on ROS2 (Foxy) and should build and run on x86_64 and aarch64 (Jetson). It is modeled after and comparable to the ROS2 node for CPU AprilTags detection here: https://github.com/christianrauch/apriltag_ros.git
 
 For more information on the Isaac GEM this node is based off of, see the Isaac SDK 2020.2 documentation here: https://docs.nvidia.com/isaac/isaac/packages/fiducials/doc/apriltags.html
 
@@ -42,9 +42,17 @@ apriltag:                           # namespace
 
 The parameters `family` and `size` are required. `family` (string) defines the tag family for the detector and can only be `36h11` at this time. `size` (float) is the tag edge size in meters, assuming square markers.
 
+### Start
+As any ROS2 package, check the repository out under `src/` in a ROS2 workspace and invoke `colcon build` appropriately to compile and prepare for use.
+
 The launch file can be used to start a component manager and load the composable node with configuration:
 ```bash
-ros2 launch nvapriltags_ros2 launch/tag_36h11.launch.py
+ros2 launch nvapriltags_ros2 tag_36h11.launch.py
 ```
+You need to run a camera node (e.g. from `v4l2_camera` package) to feed frames into the `nvapriltags_ros2` node for detection. For example, you can run the `v4l2_camera_node` and remap its output topics as follows:
+```bash
+ros2 run v4l2_camera v4l2_camera_node /camera_info:=/camera/camera_info /image_raw:=/camera/image
+```
+Tools such as `rqt` or other components can then consume the AprilTag detection messages from the `nvapriltags_ros2` node. 
 
 You will need to calibrate the intrinsics of your camera if you want the node to determine 3D poses for tags instead of just detection and corners as 2D pixel coordinates. See here: https://navigation.ros.org/tutorials/docs/camera_calibration.html

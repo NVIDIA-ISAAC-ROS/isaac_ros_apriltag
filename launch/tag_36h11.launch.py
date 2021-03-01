@@ -20,7 +20,7 @@ cfg_36h11 = {
 def generate_launch_description():
     composable_node = ComposableNode(
         name='apriltag',
-        package='nvapriltag_ros', plugin='AprilTagNode',
+        package='nvapriltags_ros2', plugin='AprilTagNode',
         remappings=[("/apriltag/image", "/camera/image"),
                     ("/apriltag/camera_info", "/camera/camera_info")],
         parameters=[cfg_36h11])

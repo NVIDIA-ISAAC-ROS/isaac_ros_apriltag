@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <!--
 # Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
 #
@@ -7,11 +8,9 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 -->
-
-<?xml version="1.0"?>
 <package format="2">
   <name>nvapriltags_ros2</name>
-  <version>1.0.0</version>
+  <version>0.8.0</version>
   <description>AprilTag Detection</description>
   <maintainer email="hemals@nvidia.com">nvidia</maintainer>
   <license>MIT</license>

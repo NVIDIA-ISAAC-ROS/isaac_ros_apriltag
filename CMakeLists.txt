@@ -8,7 +8,7 @@
 
 cmake_minimum_required(VERSION 3.5)
 
-project(nvapriltag_ros LANGUAGES CXX CUDA)
+project(nvapriltags_ros2 LANGUAGES CXX CUDA)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CUDA_MIN_VERSION "10.2")

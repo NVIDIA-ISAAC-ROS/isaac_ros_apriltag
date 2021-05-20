@@ -65,7 +65,7 @@ struct AprilTagNode::AprilTagsImpl {
                   const uint32_t height, const size_t image_buffer_size,
                   const size_t pitch_bytes,
                   const sensor_msgs::msg::CameraInfo::ConstSharedPtr &msg_ci) {
-    assert(april_tags_handle != nullptr), "Already initialized.";
+    assert(april_tags_handle == nullptr && "Already initialized.");
 
     // Get camera intrinsics
     const double *k = msg_ci->k.data();

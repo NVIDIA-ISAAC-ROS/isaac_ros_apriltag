@@ -132,7 +132,7 @@ AprilTagNode::AprilTagNode(rclcpp::NodeOptions options)
       pub_tf_(
           create_publisher<tf2_msgs::msg::TFMessage>("/tf", rclcpp::QoS(100))),
       pub_detections_(
-          create_publisher<apriltag_msgs::msg::AprilTagDetectionArray>(
+          create_publisher<nvapriltags_ros2::msg::AprilTagDetectionArray>(
               "detections", rclcpp::QoS(1))),
       impl_(std::make_unique<AprilTagsImpl>()) {}
 
@@ -170,17 +170,16 @@ void AprilTagNode::onCameraFrame(
   }
 
   // Parse detections into published protos
-  apriltag_msgs::msg::AprilTagDetectionArray msg_detections;
+  nvapriltags_ros2::msg::AprilTagDetectionArray msg_detections;
   msg_detections.header = msg_img->header;
   tf2_msgs::msg::TFMessage tfs;
   for (int i = 0; i < num_detections; i++) {
     const nvAprilTagsID_t &detection = impl_->tags[i];
 
     // detection
-    apriltag_msgs::msg::AprilTagDetection msg_detection;
+    nvapriltags_ros2::msg::AprilTagDetection msg_detection;
     msg_detection.family = tag_family_;
     msg_detection.id = detection.id;
-    msg_detection.hamming = detection.hamming_error;
 
     // corners
     for (int corner_idx = 0; corner_idx < 4; corner_idx++) {
@@ -189,7 +188,19 @@ void AprilTagNode::onCameraFrame(
       msg_detection.corners.data()[corner_idx].y =
           detection.corners[corner_idx].y;
     }
-    msg_detections.detections.push_back(msg_detection);
+
+    // center
+    const float slope_1 = (detection.corners[2].y - detection.corners[0].y) /
+                    (detection.corners[2].x - detection.corners[0].x);
+    const float slope_2 = (detection.corners[3].y - detection.corners[1].y) /
+                      (detection.corners[3].x - detection.corners[1].x);
+    const float intercept_1 = detection.corners[0].y -
+                              (slope_1 * detection.corners[0].x);
+    const float intercept_2 = detection.corners[3].y -
+                              (slope_2 * detection.corners[3].x);
+    msg_detection.center.x = (intercept_2 - intercept_1) / (slope_1 - slope_2);
+    msg_detection.center.y = (slope_2 * intercept_1 - slope_1 * intercept_2) /
+                              (slope_2 - slope_1);
 
     // Timestamped Pose3 transform
     geometry_msgs::msg::TransformStamped tf;
@@ -198,6 +209,13 @@ void AprilTagNode::onCameraFrame(
         std::string(tag_family_) + ":" + std::to_string(detection.id);
     tf.transform = ToTransformMsg(detection);
     tfs.transforms.push_back(tf);
+
+    // Pose
+    msg_detection.pose.pose.pose.position.x = tf.transform.translation.x;
+    msg_detection.pose.pose.pose.position.y = tf.transform.translation.y;
+    msg_detection.pose.pose.pose.position.z = tf.transform.translation.z;
+    msg_detection.pose.pose.pose.orientation = tf.transform.rotation;
+    msg_detections.detections.push_back(msg_detection);
   }
 
   pub_detections_->publish(msg_detections);

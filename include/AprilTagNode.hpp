@@ -12,8 +12,8 @@
 
 #include <Eigen/Core>
 
-#include <apriltag_msgs/msg/april_tag_detection.hpp>
-#include <apriltag_msgs/msg/april_tag_detection_array.hpp>
+#include "nvapriltags_ros2/msg/april_tag_detection.hpp"
+#include "nvapriltags_ros2/msg/april_tag_detection_array.hpp"
 #include <image_transport/camera_subscriber.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
@@ -33,7 +33,7 @@ private:
 
     const image_transport::CameraSubscriber sub_cam_;
     const rclcpp::Publisher<tf2_msgs::msg::TFMessage>::SharedPtr pub_tf_;
-    const rclcpp::Publisher<apriltag_msgs::msg::AprilTagDetectionArray>::SharedPtr pub_detections_;
+    const rclcpp::Publisher<nvapriltags_ros2::msg::AprilTagDetectionArray>::SharedPtr pub_detections_;
 
     struct AprilTagsImpl;
     std::unique_ptr<AprilTagsImpl> impl_;

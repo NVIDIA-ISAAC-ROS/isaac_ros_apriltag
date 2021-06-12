@@ -8,7 +8,7 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 -->
-<package format="2">
+<package format="3">
   <name>nvapriltags_ros2</name>
   <version>0.8.0</version>
   <description>AprilTag Detection</description>
@@ -19,11 +19,14 @@
 
   <build_depend>eigen</build_depend>
 
+  <build_depend>rosidl_default_generators</build_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
   <depend>sensor_msgs</depend>
   <depend>tf2_msgs</depend>
-  <depend>apriltag_msgs</depend>  
   <depend>image_transport</depend>
   <depend>cv_bridge</depend>
 

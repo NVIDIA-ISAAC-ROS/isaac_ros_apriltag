@@ -8,7 +8,7 @@
 
 cmake_minimum_required(VERSION 3.5)
 
-project(nvapriltags_ros2 LANGUAGES CXX CUDA)
+project(nvapriltags_ros2 LANGUAGES C CXX CUDA)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CUDA_MIN_VERSION "10.2")
@@ -19,7 +19,6 @@ message( STATUS "Architecture: ${ARCHITECTURE}" )
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(apriltag_msgs REQUIRED)
 find_package(tf2_msgs REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(cv_bridge REQUIRED)
@@ -46,10 +45,13 @@ elseif( ${ARCHITECTURE} STREQUAL "aarch64" )
     set_property(TARGET nvapriltags PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/nvapriltags/lib_aarch64_jetpack44/libapril_tagging.a)
 endif()
 
+# Msg
+find_package(rosidl_default_generators REQUIRED)
+
 # AprilTagNode
 add_library(AprilTagNode SHARED src/AprilTagNode.cpp)
 add_dependencies(AprilTagNode nvapriltags)
-ament_target_dependencies(AprilTagNode rclcpp rclcpp_components sensor_msgs apriltag_msgs tf2_msgs image_transport cv_bridge)
+ament_target_dependencies(AprilTagNode rclcpp rclcpp_components sensor_msgs tf2_msgs image_transport cv_bridge)
 target_link_libraries(AprilTagNode nvapriltags ${CUDA_LIBRARIES})
 rclcpp_components_register_nodes(AprilTagNode "AprilTagNode")
 
@@ -62,5 +64,17 @@ install(TARGETS AprilTagNode
 )
 
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+
+set(msg_files
+    "msg/AprilTagDetection.msg"
+    "msg/AprilTagDetectionArray.msg"
+)
+rosidl_generate_interfaces(${PROJECT_NAME}
+    ${msg_files}
+    DEPENDENCIES std_msgs geometry_msgs
+)
+
+rosidl_target_interfaces(AprilTagNode
+  ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 ament_package()

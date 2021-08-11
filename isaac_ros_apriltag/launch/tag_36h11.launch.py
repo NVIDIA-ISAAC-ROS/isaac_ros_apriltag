@@ -12,17 +12,18 @@ from launch_ros.descriptions import ComposableNode
 
 # detect all 36h11 tags
 cfg_36h11 = {
-    "image_transport": "raw",
-    "family": "36h11",
-    "size": 0.162
+    'image_transport': 'raw',
+    'family': '36h11',
+    'size': 0.162
 }
+
 
 def generate_launch_description():
     composable_node = ComposableNode(
         name='apriltag',
-        package='nvapriltags_ros2', plugin='AprilTagNode',
-        remappings=[("/apriltag/image", "/camera/image"),
-                    ("/apriltag/camera_info", "/camera/camera_info")],
+        package='isaac_ros_apriltag', plugin='AprilTagNode',
+        remappings=[('/apriltag/image', '/camera/image'),
+                    ('/apriltag/camera_info', '/camera/camera_info')],
         parameters=[cfg_36h11])
     container = ComposableNodeContainer(
         name='tag_container',

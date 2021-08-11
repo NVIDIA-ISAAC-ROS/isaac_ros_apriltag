@@ -1,58 +1,96 @@
-# NVAprilTags ROS2 Node
+# `isaac_ros_apriltag`
 
-This ROS2 node uses the NVIDIA GPU-accelerated AprilTags library to detect AprilTags in images and publish their poses, ids, and additional metadata. This has been tested on ROS2 (Foxy) and should build and run on x86_64 and aarch64 (Jetson). It is modeled after and comparable to the ROS2 node for CPU AprilTags detection here: https://github.com/christianrauch/apriltag_ros.git
+## Overview
+This ROS2 node uses the NVIDIA GPU-accelerated AprilTags library to detect AprilTags in images and publishes their poses, IDs, and additional metadata. This has been tested on ROS2 (Foxy) and should build and run on x86_64 and aarch64 (Jetson). It is modeled after and comparable to the ROS2 node for [CPU AprilTags detection](https://github.com/christianrauch/apriltag_ros.git).
 
-For more information on the Isaac GEM this node is based off of, see the Isaac SDK 2020.2 documentation here: https://docs.nvidia.com/isaac/isaac/packages/fiducials/doc/apriltags.html
+For more information on the Isaac GEM that this node is based off of, see the latest Isaac SDK documentation [here](https://docs.nvidia.com/isaac/isaac/packages/fiducials/doc/apriltags.html).
 
-For more information on AprilTags themselves, the paper and the reference CPU implementation: https://april.eecs.umich.edu/software/apriltag.html
+For more information on AprilTags themselves, including the paper and the reference CPU implementation, click [here](https://april.eecs.umich.edu/software/apriltag.html).
 
-## Topics
+## System Requirements
+This Isaac ROS package is designed and tested to be compatible with ROS2 Foxy on Jetson hardware.
+### Jetson
+- AGX Xavier or Xavier NX
+- JetPack 4.6
 
-### Subscriptions:
-The node subscribes via a `image_transport::CameraSubscriber` to `/apriltag/image`. The set of topic names depends on the type of image transport (parameter `image_transport`) selected (`raw` or `compressed`):
-- `/apriltag/image` (`raw`, type: `sensor_msgs/Image`)
-- `/apriltag/image/compressed` (`compressed`, type: `sensor_msgs/CompressedImage`)
-- `/apriltag/camera_info` (type: `sensor_msgs/CameraInfo`)
+### x86_64
+- CUDA 10.2+ supported discrete GPU
+- VPI 1.1.11
+- Ubuntu 18.04+
 
-### Publisher:
-- `/tf` (type: `tf2_msgs/TFMessage`)
-- `/apriltag/detections` (type: `apriltag_msgs/AprilTagDetectionArray`)
+### Docker
+Precompiled ROS2 Foxy packages are not available for JetPack 4.6 (based on Ubuntu 18.04 Bionic). You can either manually compile ROS2 Foxy and required dependent packages from source or use the Isaac ROS development Docker image from [Isaac ROS Common](https://github.com/NVIDIA-AI-IOT/isaac_ros_common) based on images from [jetson-containers](https://github.com/dusty-nv/jetson-containers).
 
-The camera intrinsics `K` in `CameraInfo` are used to compute the marker tag pose `T` from the homography `H`. The image and the camera intrinsics need to have the same timestamp.
+Run the following script in `isaac_ros_common` to build the image and launch the container:
 
-The tag poses are published on the standard TF topic `/tf` with the header set to the image header and `child_frame_id` set to either `tag<family>:<id>` (e.g. "tag36h11:0") or the frame name selected via configuration file. Additional information about detected tags is published as `AprilTagDetectionArray` message, which contains the original homography  matrix, the `hamming` distance and the `decision_margin` of the detection.
+`$ scripts/run_dev.sh <optional path>`
 
-## Configuration
+You can either provide an optional path to mirror in your host ROS workspace with Isaac ROS packages, which will be made available in the container as `/workspaces/isaac_ros-dev`, or you can setup a new workspace in the container.
 
-The node is configured via a yaml configurations file. For the complete ROS yaml parameter file syntax, see: https://github.com/ros2/rcl/tree/master/rcl_yaml_param_parser.
+### Package Dependencies
+- [isaac_ros_common](https://github.com/NVIDIA-AI-IOT/isaac_ros_common)
+- [isaac_ros_image_pipeline](https://github.com/NVIDIA-AI-IOT/isaac_ros_image_pipeline)
+- [image_common](https://github.com/ros-perception/image_common.git)
+- [vision_cv](https://github.com/ros-perception/vision_opencv.git)
+- [OpenCV 4.5+](https://opencv.org/)
 
-The file has the format:
-```YAML
-apriltag:                           # namespace
-    apriltag:                       # node name
-        ros__parameters:
-            # required
-            image_transport: raw    # image format: "raw" or "compressed" (default: raw)
-            family: <tag family>    # tag family name: 36h11 [only one family supported]
-            size: <tag edge size>   # tag edge size in meter (default: 2.0)
-            
-            # (optional) list of tags
-            max_tags: <maximum tag count>    # maximum number of tags to detect in a single frame (default: 20)
-```
+**Note:** `isaac_ros_common' is used for running tests and/or creating a development container. It also contains VPI Debian packages that can be installed natively on a development machine without the container.
 
-The parameters `family` and `size` are required. `family` (string) defines the tag family for the detector and can only be `36h11` at this time. `size` (float) is the tag edge size in meters, assuming square markers.
+## Quickstart
+1. Create a ROS2 workspace if one is not already prepared:  
+`mkdir -p your_ws/src`  
+**Note:** The workspace can have any name; the quickstart assumes you name it `your_ws`.
+2. Clone this package repository to `your_ws/src/isaac_ros_apriltag`. Check that you have [Git LFS](https://git-lfs.github.com/) installed before cloning to pull down all large files.  
+`cd your_ws/src && git clone https://github.com/NVIDIA-AI-IOT/isaac_ros_apriltag`
+3. Build and source the workspace:  
+`cd your_ws && colcon build --symlink-install && source install/setup.bash`
+4. (Optional) Run tests to verify complete and correct installation:  
+`colcon test`
+5. Start `isaac_ros_apriltag` using the prebuilt executable:  
+`ros2 run isaac_ros_apriltag isaac_ros_apriltag`
+6. In a separate terminal, spin up a **calibrated** camera publisher to `/image_rect` and `/camera_info` using any package (for example, `v4l2_camera`):  
+`ros2 run v4l2_camera v4l2_camera_node --ros-args -r /image_raw:=/image_rect`
+7. Observe the AprilTag detection output `/tag_detections` on a separate terminal with the command:   
+`ros2 topic echo /tag_detections`
 
-### Start
-As any ROS2 package, check the repository out under `src/` in a ROS2 workspace and invoke `colcon build` appropriately to compile and prepare for use.
+### Configuration
+You will need to calibrate the intrinsics of your camera if you want the node to determine 3D poses for tags instead of just detection and corners as 2D pixel coordinates. See [here](https://navigation.ros.org/tutorials/docs/camera_calibration.html) for more details.
 
-The launch file can be used to start a component manager and load the composable node with configuration:
-```bash
-ros2 launch nvapriltags_ros2 tag_36h11.launch.py
-```
-You need to run a camera node (e.g. from `v4l2_camera` package) to feed frames into the `nvapriltags_ros2` node for detection. For example, you can run the `v4l2_camera_node` and remap its output topics as follows:
-```bash
-ros2 run v4l2_camera v4l2_camera_node /camera_info:=/camera/camera_info /image_raw:=/camera/image
-```
-Tools such as `rqt` or other components can then consume the AprilTag detection messages from the `nvapriltags_ros2` node. 
+### Replacing `apriltag_ros` with `isaac_ros_apriltag`
+1. Add a dependency on `isaac_ros_apriltag` to `your_package/package.xml` and `your_package/CMakeLists.txt`. The original `apriltag_ros` dependency may be removed entirely.
+2. Change the package and plugin names in any `*.launch.py` launch files to use `isaac_ros_apriltag` and `AprilTagNode`, respectively.
 
-You will need to calibrate the intrinsics of your camera if you want the node to determine 3D poses for tags instead of just detection and corners as 2D pixel coordinates. See here: https://navigation.ros.org/tutorials/docs/camera_calibration.html
+## See Also
+- `isaac_ros_image_pipeline`: Accelerated metapackage offering similar functionality to the standard CPU-based `image_pipeline` metapackage
+- `isaac_ros_common`: Utilities for robust ROS2 testing, in conjunction with `launch_test`
+
+# Isaac ROS Apriltag Pipeline Tutorial
+## Objective
+This tutorial will help you quickly run and experiment with the full Isaac ROS Apriltag pipeline, from camera frames to tag detections.
+
+## Tutorial
+1. Complete the Quickstart steps above.
+2. Connect a compatible camera to your Jetson and set up the camera publisher stream. Your camera vendor may offer a specific ROS2-compatible camera driver package. Alternatively, many generic cameras are compatible with the `v4l2_camera` package.  
+**Important:** Ensure that the camera stream publishes `Image` and `CameraInfo` pairs to the topics `/image_raw` and `/camera_info`, respectively.
+3. Ensure that your workspace has been built and sourced, if you have not done so already:  
+`cd your_ws && colcon build --symlink-install && source install/setup.bash`
+4. Finally, launch the pre-composed pipeline launchfile:  
+`ros2 launch isaac_ros_apriltag isaac_ros_apriltag_pipeline.launch.py`
+
+Detections will show up at `/tag_detections`.
+
+**Note** For best performance on Jetson, ensure that power settings are configured appropriately ([Power Management for Jetson](https://docs.nvidia.com/jetson/l4t/index.html#page/Tegra%20Linux%20Driver%20Package%20Development%20Guide/power_management_jetson_xavier.html#wwpID0EUHA)).
+
+## Next Steps
+Now that you have successfully launched the full Isaac ROS Apriltag pipeline, you can easily adapt the provided launchfile to integrate with your existing ROS2 environment. 
+
+Alternatively, since the `AprilTagNode` is provided as a ROS2 Component, you can also compose the accelerated Apriltag processor directly into an existing executable.
+
+# Package Reference
+## `isaac_ros_apriltag`
+### Overview
+The `isaac_ros_apriltag` package offers functionality for detecting poses from AprilTags in the frame. It largely replaces the `apriltag_ros` package, though an included dependency on the `ImageFormatConverterNode` plugin of the `isaac_ros_image_proc` package also functions as a way to replace the CPU-based image format conversion in `cv_bridge`.
+### Available Components
+| Component      | Topics Subscribed                                                  | Topics Published                                                       | Parameters                                                                                                                                                                                                               |
+| -------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `AprilTagNode` | `camera/image_rect`, `camera/camera_info`: The input camera stream | `tag_detections`: The detection message array <br> `tf`: The tag poses | `family`: The tag family for the detector (this value can only be `36h11` at this time) <br> `size`: The tag edge size in meters, assuming square markers <br> `max_tags`: The maximum number of tags to be detected, which is 20 by default |

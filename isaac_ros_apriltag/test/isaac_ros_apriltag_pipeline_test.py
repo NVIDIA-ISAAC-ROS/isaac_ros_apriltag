@@ -40,7 +40,6 @@ def generate_test_description():
     apriltag_exe = launch_ros.actions.Node(
         package='isaac_ros_apriltag',
         executable='isaac_ros_apriltag',
-        name='apriltag_exe',
         namespace=IsaacROSAprilTagPipelineTest.generate_namespace(),
     )
 
@@ -58,7 +57,8 @@ class IsaacROSAprilTagPipelineTest(IsaacROSBaseTest):
     @IsaacROSBaseTest.for_each_test_case()
     def test_apriltag_pipeline(self, test_folder) -> None:
         """Expect the pipeline to produce apriltag detections from images."""
-        self.generate_namespace_lookup(['image', 'camera_info', 'tag_detections'])
+        self.generate_namespace_lookup(
+            ['image', 'camera_info', 'tag_detections'])
 
         image_pub = self.node.create_publisher(
             Image, self.namespaces['image'], self.DEFAULT_QOS)
@@ -70,7 +70,8 @@ class IsaacROSAprilTagPipelineTest(IsaacROSBaseTest):
             [('tag_detections', AprilTagDetectionArray)], received_messages)
 
         try:
-            image = JSONConversion.load_image_from_json(test_folder / 'image.json')
+            image = JSONConversion.load_image_from_json(
+                test_folder / 'image.json')
             camera_info = JSONConversion.load_camera_info_from_json(
                 test_folder / 'camera_info.json')
 
@@ -84,14 +85,15 @@ class IsaacROSAprilTagPipelineTest(IsaacROSBaseTest):
 
             done = False
             while time.time() < end_time:
-                rclpy.spin_once(self.node, timeout_sec=TIMEOUT)
+                rclpy.spin_once(self.node, timeout_sec=0.1)
 
                 # If we have received exactly one message on the output topic, break
                 if 'tag_detections' in received_messages:
                     done = True
                     break
 
-            self.assertTrue(done, "Didn't receive output on tag_detections topic!")
+            self.assertTrue(
+                done, "Didn't receive output on tag_detections topic!")
 
             # Collect received detections
             tag_detections_actual = received_messages['tag_detections']

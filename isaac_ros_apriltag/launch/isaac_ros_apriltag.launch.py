@@ -21,10 +21,12 @@ cfg_36h11 = {
 def generate_launch_description():
     composable_node = ComposableNode(
         name='apriltag',
-        package='isaac_ros_apriltag', plugin='AprilTagNode',
-        remappings=[('/apriltag/image', '/camera/image'),
-                    ('/apriltag/camera_info', '/camera/camera_info')],
+        package='isaac_ros_apriltag',
+        plugin='isaac_ros::apriltag::AprilTagNode',
+        remappings=[('/camera/image_rect', '/image'),
+                    ('/camera/camera_info', '/camera_info')],
         parameters=[cfg_36h11])
+
     container = ComposableNodeContainer(
         name='tag_container',
         namespace='apriltag',

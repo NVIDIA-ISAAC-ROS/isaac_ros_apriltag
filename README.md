@@ -87,7 +87,7 @@ You will need to calibrate the intrinsics of your camera if you want the node to
 ## Objective
 This tutorial will help you quickly run and experiment with the full Isaac ROS Apriltag pipeline, from camera frames to tag detections.
 
-## Tutorial
+## Tutorial with a real camera
 1. Complete the Quickstart steps above.
 2. Connect a compatible camera to your Jetson and set up the camera publisher stream. Your camera vendor may offer a specific ROS2-compatible camera driver package. Alternatively, many generic cameras are compatible with the `v4l2_camera` package.  
 **Important:** Ensure that the camera stream publishes `Image` and `CameraInfo` pairs to the topics `/image_raw` and `/camera_info`, respectively.
@@ -96,7 +96,52 @@ This tutorial will help you quickly run and experiment with the full Isaac ROS A
 4. Finally, launch the pre-composed pipeline launchfile:  
 `ros2 launch isaac_ros_apriltag isaac_ros_apriltag_pipeline.launch.py`
 
-Detections will show up at `/tag_detections`.
+## Tutorial with Isaac Sim
+1. Complete the Quickstart steps above.
+2. Ensure that your workspace has been built and sourced, if you have not done so already:  
+`cd your_ws && colcon build --symlink-install && source install/setup.bash`
+3. Launch the pre-composed pipeline launchfile:  
+`ros2 launch isaac_ros_apriltag isaac_ros_apriltag_isaac_sim_pipeline.launch.py`
+4. Make sure you have Isaac Sim [set up](https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim.html#setting-up-isaac-sim) correctly and choose the appropriate working environment[[Native](https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/setup.html)/[Docker&Cloud](https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/setup.html#docker-cloud-deployment)]. For this walkthrough, we are using the native workstation setup for Isaac Sim.
+5. See [Running For The First Time](https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/first_run.html#) section to launch Isaac Sim from the [app launcher](https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/user_interface_launcher.html) and click on the **Isaac Sim** button.
+6. Set up the Isaac Sim ROS2 bridge as described [here](https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/ext_omni_isaac_ros_bridge.html#ros2-bridge).
+7. Connect to the Nucleus server as shown in the [Getting Started](https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/sample_jetbot.html#getting-started) section if you have not done it already.
+8. Open up the Isaac ROS Common USD scene located at:
+   
+   `omniverse://<your_nucleus_server>/Isaac/Samples/ROS/Scenario/carter_warehouse_apriltags_worker.usd`.
+   
+   And wait for it to load completely.
+9. Press **Play** to start publishing data from Isaac Sim.
+<div align="center"><img src="resources/Isaac_sim_april_tag.png" width="800px"/></div>
+
+10. In a separate terminal, run RViz to visualize the apriltag detections:<br>
+    `rviz2`
+11.  Add the tf tree in the **Displays** RViz panel. <br> <div align="center"><img src="resources/Rviz_add_tf.png" width="600px"/></div>
+12.  Set the **Fixed frame** in the **Global Options** to *chassis_link*. <br> <div align="center"><img src="resources/Rviz_fixed_frame.png" width="300px"/></div>
+13.  You should see the pose of the tags in RVIZ: <br> <div align="center"><img src="resources/Rviz_apriltag_output.png" width="800px"/></div>
+14.  If you prefer to observe the Apriltag output in a text mode, on a separate terminal, echo the contents of the `/tag_detections` topic with the following command:   
+`ros2 topic echo /tag_detections` <br> <div align="center"><img src="resources/Terminal_output.png" width="600px"/></div>
+
+## Tutorial with Isaac Sim with Hardware in the loop (HIL)
+
+The following instructions are for a setup where we can run the sample on a Jetson device and Isaac Sim on an x86 machine. We will use the ROS_DOMAIN_ID environment variable to have a separate logical network for Isaac Sim and the sample application. 
+
+NOTE: Before executing any of the ROS commands, make sure to set the ROS_DOMAIN_ID variable first.
+
+1. Complete step 4 of [Tutorial with Isaac Sim](#tutorial-with-isaac-sim) section if you have not done it already.
+2. Open the location of the Isaac Sim package in the terminal by clicking the [**Open in Terminal**](https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/user_interface_launcher.html) button.
+   
+   <div align="center"><img src="resources/Isaac_sim_app_launcher.png" width="400px"/></div>
+3. In the terminal opened by the previous step, set the ROS_DOMAIN_ID as shown:
+
+   `export ROS_DOMAIN_ID=<some_number>`
+
+4. Launch Isaac Sim from the script as shown:
+   
+   `./isaac-sim.sh` 
+   <div align="center"><img src="resources/Isaac_sim_app_terminal.png" width="600px"/></div>
+5. Continue with step 6 of [Tutorial with Isaac Sim](#tutorial-with-isaac-sim) section. Make sure to set the ROS_DOMAIN_ID variable before running the sample application.
+
 
 ## Next Steps
 Now that you have successfully launched the full Isaac ROS Apriltag pipeline, you can easily adapt the provided launchfile to integrate with your existing ROS2 environment. 
@@ -108,13 +153,15 @@ Alternatively, since the `AprilTagNode` is provided as a ROS2 Component, you can
 ### Overview
 The `isaac_ros_apriltag` package offers functionality for detecting poses from AprilTags in the frame. It largely replaces the `apriltag_ros` package, though an included dependency on the `ImageFormatConverterNode` plugin of the `isaac_ros_image_proc` package also functions as a way to replace the CPU-based image format conversion in `cv_bridge`.
 ### Available Components
-| Component      | Topics Subscribed                                                  | Topics Published                                                       | Parameters                                                                                                                                                                                                               |
-| -------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Component      | Topics Subscribed                                                  | Topics Published                                                       | Parameters                                                                                                                                                                                                                                   |
+| -------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `AprilTagNode` | `camera/image_rect`, `camera/camera_info`: The input camera stream | `tag_detections`: The detection message array <br> `tf`: The tag poses | `family`: The tag family for the detector (this value can only be `36h11` at this time) <br> `size`: The tag edge size in meters, assuming square markers <br> `max_tags`: The maximum number of tags to be detected, which is 20 by default |
 
 # Updates
 
-| Date | Changes |
-| -----| ------- |
+| Date       | Changes                                                                                 |
+| ---------- | --------------------------------------------------------------------------------------- |
+| 2021-11-15 | Isaac Sim HIL documentation update                                                      |
+| 2021-11-15 | Added launch file to work with Isaac Sim                                                |
 | 2021-10-20 | Migrated to [NVIDIA-ISAAC-ROS](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_apriltag)  |
 | 2021-08-11 | Initial release to [NVIDIA-AI-IOT](https://github.com/NVIDIA-AI-IOT/isaac_ros_apriltag) |

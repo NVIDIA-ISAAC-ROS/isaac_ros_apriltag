@@ -61,15 +61,17 @@ You can either provide an optional path to mirror in your host ROS workspace wit
 2. Clone this package repository to `your_ws/src/isaac_ros_apriltag`. Check that you have [Git LFS](https://git-lfs.github.com/) installed before cloning to pull down all large files.  
 `sudo apt-get install git-lfs`  
 `cd your_ws/src && git clone https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_apriltag`
-3. Build and source the workspace:  
-`cd your_ws && colcon build --symlink-install && source install/setup.bash`
-4. (Optional) Run tests to verify complete and correct installation:  
+3. Build the workspace:  
+`cd your_ws && colcon build --symlink-install`
+4. Source  the workspace (in a new terminal):   
+`cd your_ws && source install/setup.bash`
+5. (Optional) Run tests to verify complete and correct installation:  
 `colcon test`
-5. Start `isaac_ros_apriltag` using the prebuilt executable:  
+6. Start `isaac_ros_apriltag` using the prebuilt executable:  
 `ros2 run isaac_ros_apriltag isaac_ros_apriltag`
-6. In a separate terminal, spin up a **calibrated** camera publisher to `/image_rect` and `/camera_info` using any package (for example, `v4l2_camera`):  
+7. In a separate terminal, spin up a **calibrated** camera publisher to `/image_rect` and `/camera_info` using any package (for example, `v4l2_camera`):  
 `ros2 run v4l2_camera v4l2_camera_node --ros-args -r /image_raw:=/image_rect`
-7. Observe the AprilTag detection output `/tag_detections` on a separate terminal with the command:   
+8. Observe the AprilTag detection output `/tag_detections` on a separate terminal with the command:   
 `ros2 topic echo /tag_detections`
 
 ### Configuration

@@ -18,9 +18,17 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+# Default to Release build
+if(NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
+endif()
+message( STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}" )
+
 set(CUDA_MIN_VERSION "10.2")
 
-execute_process(COMMAND uname -m COMMAND tr -d '\n' OUTPUT_VARIABLE ARCHITECTURE)
+execute_process(COMMAND uname -m COMMAND tr -d '\n'
+  OUTPUT_VARIABLE ARCHITECTURE
+)
 message( STATUS "Architecture: ${ARCHITECTURE}" )
 
 find_package(ament_cmake_auto REQUIRED)
@@ -43,7 +51,7 @@ link_directories(${CUDA_TOOLKIT_ROOT_DIR}/lib64)
 include_directories(nvapriltags/nvapriltags)
 add_library(nvapriltags STATIC IMPORTED)
 if( ${ARCHITECTURE} STREQUAL "x86_64" )
-  set_property(TARGET nvapriltags PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/nvapriltags/lib_x86_64/libapril_tagging.a)
+  set_property(TARGET nvapriltags PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/nvapriltags/lib_x86_64_cuda_11_4/libapril_tagging.a)
 elseif( ${ARCHITECTURE} STREQUAL "aarch64" )
   set_property(TARGET nvapriltags PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/nvapriltags/lib_aarch64_jetpack44/libapril_tagging.a)
 endif()

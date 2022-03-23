@@ -11,14 +11,16 @@ For more information on AprilTags themselves, including the paper and the refere
 
 ## System Requirements
 This Isaac ROS package is designed and tested to be compatible with ROS2 Foxy on Jetson hardware.
+
 ### Jetson
-- AGX Xavier or Xavier NX
-- JetPack 4.6
+- [Jetson AGX Xavier or Xavier NX](https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/)
+- [JetPack 4.6.1](https://developer.nvidia.com/embedded/jetpack)
 
 ### x86_64
-- CUDA 10.2+ supported discrete GPU
-- VPI 1.1.11
 - Ubuntu 20.04+
+- CUDA 11.4 supported discrete GPU
+- VPI 1.1.11
+
 
 **Note:** For best performance on Jetson, ensure that power settings are configured appropriately ([Power Management for Jetson](https://docs.nvidia.com/jetson/l4t/index.html#page/Tegra%20Linux%20Driver%20Package%20Development%20Guide/power_management_jetson_xavier.html#wwpID0EUHA)).
 

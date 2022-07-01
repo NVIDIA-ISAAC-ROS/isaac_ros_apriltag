@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <!--
-Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+Copyright (c) 2021-2022, NVIDIA CORPORATION.  All rights reserved.
 
 NVIDIA CORPORATION and its licensors retain all intellectual property
 and proprietary rights in and to this software, related documentation
@@ -12,13 +12,14 @@ license agreement from NVIDIA CORPORATION is strictly prohibited.
 
 <package format="3">
   <name>isaac_ros_apriltag</name>
-  <version>0.9.0</version>
-  <description>AprilTag detection</description>
+  <version>0.10.0</version>
+  <description>CUDA-accelerated Apriltag detection and pose estimation.</description>
 
   <maintainer email="hemals@nvidia.com">Hemal Shah</maintainer>
   <license>NVIDIA Isaac ROS Software License</license>
-  <url type="website">https://developer.nvidia.com/isaac-ros-gems/</url>
+  <url type="website">https://developer.nvidia.com/isaac-ros/</url>
   <author>Arjun Bhorkar</author>
+  <author>Ashwin Varghese Kuruttukulam</author>
   <author>Hemal Shah</author>
 
   <buildtool_depend>ament_cmake_auto</buildtool_depend>
@@ -27,11 +28,13 @@ license agreement from NVIDIA CORPORATION is strictly prohibited.
   <depend>rclcpp_components</depend>
   <depend>sensor_msgs</depend>
   <depend>tf2_msgs</depend>
+  <depend>tf2_ros</depend>
   <depend>image_transport</depend>
   <depend>cv_bridge</depend>
   <depend>eigen</depend>
   <depend>isaac_ros_image_proc</depend>
   <depend>isaac_ros_apriltag_interfaces</depend>
+  <depend>isaac_ros_nitros</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

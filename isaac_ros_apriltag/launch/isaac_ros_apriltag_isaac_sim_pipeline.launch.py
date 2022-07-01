@@ -1,4 +1,4 @@
-# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2021-2022, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -13,22 +13,23 @@ from launch_ros.descriptions import ComposableNode
 
 def generate_launch_description():
     apriltag_node = ComposableNode(
-        name='isaac_ros_apriltag',
         package='isaac_ros_apriltag',
-        plugin='isaac_ros::apriltag::AprilTagNode',
-        remappings=[('camera/image_rect', '/rgb_left'),
-                    ('camera/camera_info', '/camera_info_left')],
-        parameters=[{'family': '36h11',
-                     'size': 0.32,
+        plugin='nvidia::isaac_ros::apriltag::AprilTagNode',
+        name='apriltag',
+        remappings=[('/image', '/rgb_left'),
+                    ('/camera_info', '/camera_info_left')],
+        parameters=[{'size': 0.32,
                      'max_tags': 20}]
     )
 
     apriltag_container = ComposableNodeContainer(
+        package='rclcpp_components',
         name='apriltag_container',
         namespace='',
-        package='rclcpp_components',
-        executable='component_container',
-        composable_node_descriptions=[apriltag_node],
+        executable='component_container_mt',
+        composable_node_descriptions=[
+            apriltag_node,
+        ],
         output='screen'
     )
 

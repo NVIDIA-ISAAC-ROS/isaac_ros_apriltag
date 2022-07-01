@@ -1,0 +1,35 @@
+# Tutorial with Isaac Sim
+> **Note: Isaac Sim 2022.1.0 published on 6/3/2022 does not support ROS2 Humble. Please follow one of the [workarounds](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_common/blob/main/docs/isaac-sim-sil-setup.md#isaac-sim-202210-workarounds) before continuing with the tutorial**
+1. Complete the [Quickstart section](../README.md#quickstart) in the main README.
+2. Launch the Docker container using the `run_dev.sh` script:
+    ```bash
+    cd ~/workspaces/isaac_ros-dev/src/isaac_ros_common && \
+      ./scripts/run_dev.sh
+    ```
+3. Inside the container, build and source the workspace:  
+    ```bash
+    cd /workspaces/isaac_ros-dev && \
+      colcon build --symlink-install && \
+      source install/setup.bash
+    ```
+4. Launch the pre-composed pipeline launchfile: 
+    ```bash 
+    ros2 launch isaac_ros_apriltag isaac_ros_apriltag_isaac_sim_pipeline.launch.py
+    ```
+5. Install and launch Isaac Sim following the steps in the [Isaac ROS Isaac Sim Setup Guide](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_common/blob/main/docs/isaac-sim-sil-setup.md)
+6. Open up the Isaac ROS Common USD scene (using the "content" window) located at:
+   
+   `omniverse://localhost/NVIDIA/Assets/Isaac/2022.1/Isaac/Samples/ROS2/Scenario/carter_warehouse_apriltags_worker.usd`
+   
+   Wait for it to load completely.
+   > **Note:** To use a different server, replace `localhost` with `<your_nucleus_server>`
+7. Press **Play** to start publishing data from Isaac Sim.
+<div align="center"><img src="../resources/Isaac_sim_april_tag.png" width="800px"/></div>
+
+7. In a separate terminal, run RViz to visualize the AprilTag detections:<br>
+    `rviz2`
+8.  Add the tf tree in the **Displays** RViz panel. <br> <div align="center"><img src="../resources/Rviz_add_tf.png" width="600px"/></div>
+9.  Set the **Fixed frame** in the **Global Options** to `chassis_link`. <br> <div align="center"><img src="../resources/Rviz_fixed_frame.png" width="300px"/></div>
+10.  You should see the pose of the tags in RVIZ: <br> <div align="center"><img src="../resources/Rviz_apriltag_output.png" width="800px"/></div>
+11.  If you prefer to observe the AprilTag output in text form, echo the contents of the `/tag_detections` topic with the following command in a separate terminal:   
+`ros2 topic echo /tag_detections` <br> <div align="center"><img src="../resources/Terminal_output.png" width="600px"/></div>

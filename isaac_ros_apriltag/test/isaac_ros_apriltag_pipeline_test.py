@@ -1,4 +1,4 @@
-# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2021-2022, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -12,7 +12,9 @@ import time
 
 from isaac_ros_apriltag_interfaces.msg import AprilTagDetectionArray
 from isaac_ros_test import IsaacROSBaseTest, JSONConversion
-import launch_ros
+from launch_ros.actions import ComposableNodeContainer
+from launch_ros.descriptions import ComposableNode
+
 import pytest
 import rclpy
 from sensor_msgs.msg import CameraInfo, Image
@@ -21,31 +23,27 @@ from sensor_msgs.msg import CameraInfo, Image
 @pytest.mark.rostest
 def generate_test_description():
     """Generate launch description with all ROS2 nodes for testing."""
-    rectify_node = launch_ros.descriptions.ComposableNode(
-        package='isaac_ros_image_proc',
-        plugin='isaac_ros::image_proc::RectifyNode',
-        name='rectify_node',
+    apriltag_node = ComposableNode(
+        package='isaac_ros_apriltag',
+        plugin='nvidia::isaac_ros::apriltag::AprilTagNode',
+        name='apriltag',
         namespace=IsaacROSAprilTagPipelineTest.generate_namespace(),
+        parameters=[{'size': 0.22,
+                     'max_tags': 20}]
     )
 
-    rectify_container = launch_ros.actions.ComposableNodeContainer(
-        name='rectify_container',
-        namespace='',
+    apriltag_container = ComposableNodeContainer(
         package='rclcpp_components',
-        executable='component_container',
-        composable_node_descriptions=[rectify_node],
+        name='apriltag_container',
+        namespace='',
+        executable='component_container_mt',
+        composable_node_descriptions=[
+            apriltag_node,
+        ],
         output='screen'
     )
-
-    apriltag_exe = launch_ros.actions.Node(
-        package='isaac_ros_apriltag',
-        executable='isaac_ros_apriltag',
-        namespace=IsaacROSAprilTagPipelineTest.generate_namespace(),
-    )
-
     return IsaacROSAprilTagPipelineTest.generate_test_description([
-        rectify_container,
-        apriltag_exe
+        apriltag_container
     ])
 
 
@@ -75,16 +73,19 @@ class IsaacROSAprilTagPipelineTest(IsaacROSBaseTest):
             camera_info = JSONConversion.load_camera_info_from_json(
                 test_folder / 'camera_info.json')
 
-            # Publish test case over both topics
-            image_pub.publish(image)
-            camera_info_pub.publish(camera_info)
-
             # Wait at most TIMEOUT seconds for subscriber to respond
             TIMEOUT = 20
             end_time = time.time() + TIMEOUT
 
             done = False
             while time.time() < end_time:
+                # Publish test case multiple times
+                # This is required because frames might be dropped
+                # since QoS of this image publisher and subscriber(rectify) is
+                # Reliability = Best effort and
+                # Durability = Volatile
+                camera_info_pub.publish(camera_info)
+                image_pub.publish(image)
                 rclpy.spin_once(self.node, timeout_sec=0.1)
 
                 # If we have received exactly one message on the output topic, break
@@ -92,24 +93,49 @@ class IsaacROSAprilTagPipelineTest(IsaacROSBaseTest):
                     done = True
                     break
 
-            print(f'done = {done}')
-            # TODO: Fix  https://nvbugs/3424817 before uncommenting.
-            # self.assertTrue(
-            #     done, "Didn't receive output on tag_detections topic!")
+            self.assertTrue(
+                done, "Didn't receive output on tag_detections topic!")
 
-            # # Collect received detections
-            # tag_detections_actual = received_messages['tag_detections']
+            # Collect received detections
+            tag_detections_actual = received_messages['tag_detections']
 
-            # TODO: Fix  https://nvbugs/3424817 before uncommenting.
             # Make sure that at least one detection was found
-            # self.assertGreaterEqual(len(tag_detections_actual.detections), 1,
-            #                         "Didn't find at least 1 detection in image!")
+            self.assertGreaterEqual(len(tag_detections_actual.detections), 1,
+                                    "Didn't find at least 1 detection in image!")
 
-            # TODO(jaiveers): Store and check precise tag location?
+            for tag_detection in tag_detections_actual.detections:
+                self.assertEqual(tag_detection.id, 0)
+                self.assertEqual(tag_detection.family, 'tag36h11')
+
+                corners_message = 'Corners detection is not accurate'
+                center_message = 'Center detection is not accurate'
+                # Allow for 2 pixels of error in detection
+                delta = 2
+                # Ground truth data was obtained from generated image
+                # found at ../image.png and ../test_cases/apritlag0
+                self.assertAlmostEqual(tag_detection.center.x, 926.0, None,
+                                       center_message, delta)
+                self.assertAlmostEqual(tag_detection.center.y, 547.0, None,
+                                       center_message, delta)
+                self.assertAlmostEqual(tag_detection.corners[0].x, 1044.0, None,
+                                       corners_message, delta)
+                self.assertAlmostEqual(tag_detection.corners[0].y, 665.0, None,
+                                       corners_message, delta)
+                self.assertAlmostEqual(tag_detection.corners[1].x, 808.0, None,
+                                       corners_message, delta)
+                self.assertAlmostEqual(tag_detection.corners[1].y, 665.0, None,
+                                       corners_message, delta)
+                self.assertAlmostEqual(tag_detection.corners[2].x, 808.0, None,
+                                       corners_message, delta)
+                self.assertAlmostEqual(tag_detection.corners[2].y, 429.0, None,
+                                       corners_message, delta)
+                self.assertAlmostEqual(tag_detection.corners[3].x, 1044.0, None,
+                                       corners_message, delta)
+                self.assertAlmostEqual(tag_detection.corners[3].y, 429.0, None,
+                                       corners_message, delta)
 
         finally:
             pass
-            # TODO: Fix  https://nvbugs/3424817 before uncommenting.
-            # self.assertTrue(self.node.destroy_subscription(tag_detections_sub))
-            # self.assertTrue(self.node.destroy_publisher(image_pub))
-            # self.assertTrue(self.node.destroy_publisher(camera_info_pub))
+            self.assertTrue(self.node.destroy_subscription(tag_detections_sub))
+            self.assertTrue(self.node.destroy_publisher(image_pub))
+            self.assertTrue(self.node.destroy_publisher(camera_info_pub))

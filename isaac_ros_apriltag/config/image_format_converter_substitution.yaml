@@ -1,0 +1,32 @@
+%YAML 1.2
+# Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+---
+name: Image Format Converter Substitution Rule
+operation: substitution
+body:
+  groups:
+    - entities:
+        - components:
+          - type: nvidia::cvcore::tensor_ops::ConvertColorFormat
+            parameters:
+              output_type: "RGB_U8"
+              receiver: camera_image_in
+              transmitter: camera_image_out
+              pool: pool
+              input_adapter: resource/adapter
+              output_adapter: resource/adapter
+              output_name: "image"
+            overriding_parameters: []
+    - entities:
+        - components:
+          - type: nvidia::isaac_ros::MessageForward
+            parameters:
+              in: camera_image_in
+              out: camera_image_out
+            overriding_parameters: []

@@ -1,0 +1,12 @@
+/**:
+    ros__parameters:
+      video_device: "/dev/video0"
+      framerate: 30.0
+      io_method: "mmap"
+      frame_id: "camera"
+      pixel_format: "yuyv"
+      color_format: "yuv422p"
+      image_width: 1280
+      image_height: 720
+      camera_name: "test_camera"
+      camera_info_url: "package://isaac_ros_apriltag/config/camera_info.yaml"

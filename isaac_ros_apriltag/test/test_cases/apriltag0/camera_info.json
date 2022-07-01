@@ -2,8 +2,8 @@
   "header": {
     "frame_id": "tf_camera"
   },
-  "width": 1280,
-  "height": 800,
+  "width": 1920,
+  "height": 1080,
   "distortion_model": "plumb_bob",
   "D": [
     0.0,

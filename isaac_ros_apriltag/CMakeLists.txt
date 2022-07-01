@@ -1,4 +1,4 @@
-# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2021-2022, NVIDIA CORPORATION.  All rights reserved.
 #
 # NVIDIA CORPORATION and its licensors retain all intellectual property
 # and proprietary rights in and to this software, related documentation
@@ -24,7 +24,7 @@ if(NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
 endif()
 message( STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}" )
 
-set(CUDA_MIN_VERSION "10.2")
+set(CUDA_MIN_VERSION "11.4")
 
 execute_process(COMMAND uname -m COMMAND tr -d '\n'
   OUTPUT_VARIABLE ARCHITECTURE
@@ -47,36 +47,20 @@ find_package(CUDA ${CUDA_MIN_VERSION} REQUIRED)
 include_directories(${CUDA_INCLUDE_DIRS})
 link_directories(${CUDA_TOOLKIT_ROOT_DIR}/lib64)
 
-# NVAprilTags
-include_directories(nvapriltags/nvapriltags)
-add_library(nvapriltags STATIC IMPORTED)
-if( ${ARCHITECTURE} STREQUAL "x86_64" )
-  set_property(TARGET nvapriltags PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/nvapriltags/lib_x86_64_cuda_11_4/libapril_tagging.a)
-elseif( ${ARCHITECTURE} STREQUAL "aarch64" )
-  set_property(TARGET nvapriltags PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/nvapriltags/lib_aarch64_jetpack44/libapril_tagging.a)
-endif()
+# Install config directory
+install(
+  DIRECTORY config
+  DESTINATION share/${PROJECT_NAME}
+)
 
 # apriltag_node
 ament_auto_add_library(apriltag_node SHARED src/apriltag_node.cpp)
 target_compile_definitions(apriltag_node
   PRIVATE "COMPOSITION_BUILDING_DLL"
 )
-target_link_libraries(apriltag_node nvapriltags ${CUDA_LIBRARIES})
-rclcpp_components_register_nodes(apriltag_node "isaac_ros::apriltag::AprilTagNode")
-set(node_plugins "${node_plugins}isaac_ros::apriltag::AprilTagNode;$<TARGET_FILE:apriltag_node>\n")
-
-# isaac_ros_apriltag executable
-ament_auto_add_executable(${PROJECT_NAME}
-  src/apriltag_main.cpp
-)
-ament_target_dependencies(${PROJECT_NAME} isaac_ros_image_proc)
-target_link_libraries(${PROJECT_NAME} apriltag_node vpi)  # explicit link VPI to workaround inherited dependency
-
-install(TARGETS ${PROJECT_NAME}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-)
+target_link_libraries(apriltag_node ${CUDA_LIBRARIES})
+rclcpp_components_register_nodes(apriltag_node "nvidia::isaac_ros::apriltag::AprilTagNode")
+set(node_plugins "${node_plugins}nvidia::isaac_ros::apriltag::AprilTagNode;$<TARGET_FILE:apriltag_node>\n")
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

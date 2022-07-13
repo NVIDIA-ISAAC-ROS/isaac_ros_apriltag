@@ -17,7 +17,7 @@ def generate_launch_description():
         plugin='nvidia::isaac_ros::apriltag::AprilTagNode',
         name='apriltag',
         parameters=[{'size': 0.16,
-                     'max_tags': 20}])
+                     'max_tags': 64}])
 
     apriltag_container = ComposableNodeContainer(
         package='rclcpp_components',

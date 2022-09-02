@@ -49,15 +49,16 @@ The performance results of benchmarking the prepared pipelines in this package o
 - [Updates](#updates)
 
 ## Latest Update
-Update 2022-06-30: Update to use NITROS for improved performance
+Update 2022-08-31: Update to be compatible with JetPack 5.0.2
 
 ## Supported Platforms
 This package is designed and tested to be compatible with ROS2 Humble running on [Jetson](https://developer.nvidia.com/embedded-computing) or an x86_64 system with an NVIDIA GPU.
 
+> **Note**: Versions of ROS2 earlier than Humble are **not** supported. This package depends on specific ROS2 implementation features that were only introduced beginning with the Humble release.
 
 | Platform | Hardware                                                                                                                                                                                                | Software                                                                                                             | Notes                                                                                                                                                                                   |
 | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Jetson   | [Jetson Orin](https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/jetson-orin/)<br/>[Jetson Xavier](https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/jetson-agx-xavier/) | [JetPack 5.0.1 DP](https://developer.nvidia.com/embedded/jetpack)                                                    | For best performance, ensure that [power settings](https://docs.nvidia.com/jetson/archives/r34.1/DeveloperGuide/text/SD/PlatformPowerAndPerformance.html) are configured appropriately. |
+| Jetson   | [Jetson Orin](https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/jetson-orin/)<br/>[Jetson Xavier](https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/jetson-agx-xavier/) | [JetPack 5.0.2](https://developer.nvidia.com/embedded/jetpack)                                                       | For best performance, ensure that [power settings](https://docs.nvidia.com/jetson/archives/r34.1/DeveloperGuide/text/SD/PlatformPowerAndPerformance.html) are configured appropriately. |
 | x86_64   | NVIDIA GPU                                                                                                                                                                                              | [Ubuntu 20.04+](https://releases.ubuntu.com/20.04/) <br> [CUDA 11.6.1+](https://developer.nvidia.com/cuda-downloads) |
 
 
@@ -93,7 +94,7 @@ To simplify development, we strongly recommend leveraging the Isaac ROS Dev Dock
 
     ```bash
     cd ~/workspaces/isaac_ros-dev/src/isaac_ros_apriltag && \ 
-      git lfs pull -X "" -I "resources/quickstart.bag"
+      git lfs pull -X "" -I "resources/rosbags/quickstart.bag"
     ```
 
 4. Launch the Docker container using the `run_dev.sh` script:
@@ -122,7 +123,7 @@ To simplify development, we strongly recommend leveraging the Isaac ROS Dev Dock
     ```
 9. Run the rosbag file to simulate an image stream:
     ```bash
-    ros2 bag play --loop src/isaac_ros_apriltag/resources/quickstart.bag
+    ros2 bag play --loop src/isaac_ros_apriltag/resources/rosbags/quickstart.bag
     ```
 10. Open a **third** terminal inside the docker container:
     ```bash
@@ -200,6 +201,7 @@ For solutions to problems with Isaac ROS, please check [here](https://github.com
 
 | Date       | Changes                                                                                 |
 | ---------- | --------------------------------------------------------------------------------------- |
+| 2022-08-31 | Update to be compatible with JetPack 5.0.2                                              |
 | 2022-06-30 | Update to use NITROS for improved performance                                           |
 | 2021-11-15 | Isaac Sim HIL documentation update                                                      |
 | 2021-11-15 | Added launch file to work with Isaac Sim                                                |

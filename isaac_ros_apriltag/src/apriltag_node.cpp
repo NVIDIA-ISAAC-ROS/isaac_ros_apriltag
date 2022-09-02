@@ -15,6 +15,9 @@
 #include <utility>
 
 #include "isaac_ros_apriltag/apriltag_node.hpp"
+#include "isaac_ros_nitros_april_tag_detection_array_type/nitros_april_tag_detection_array.hpp"
+#include "isaac_ros_nitros_camera_info_type/nitros_camera_info.hpp"
+#include "isaac_ros_nitros_image_type/nitros_image.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_components/register_node_macro.hpp"
@@ -24,7 +27,7 @@
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #pragma GCC diagnostic ignored "-Wpedantic"
 #include "gxf/std/timestamp.hpp"
-#include "messages/fiducial_message.hpp"
+#include "extensions/fiducials/messages/fiducial_message.hpp"
 #pragma GCC diagnostic pop
 
 
@@ -60,7 +63,7 @@ const std::vector<std::pair<std::string, std::string>> EXTENSIONS = {
   {"isaac_ros_nitros", "gxf/libgxf_sight.so"},
   {"isaac_ros_nitros", "gxf/libgxf_atlas.so"},
   {"isaac_ros_nitros", "gxf/libgxf_isaac_messages.so"},
-  {"isaac_ros_nitros", "gxf/libgxf_fiducials.so"},
+  {"isaac_ros_nitros_april_tag_detection_array_type", "gxf/libgxf_fiducials.so"},
   {"isaac_ros_nitros", "gxf/libgxf_message_compositor.so"},
   {"isaac_ros_nitros", "gxf/tensorops/libgxf_tensorops.so"}
 };
@@ -78,7 +81,7 @@ const nitros::NitrosPublisherSubscriberConfigMap CONFIG_MAP = {
   {INPUT_COMPONENT_KEY_CAM,
     {
       .type = nitros::NitrosPublisherSubscriberType::NEGOTIATED,
-      .qos = rclcpp::QoS(1),
+      .qos = rclcpp::QoS(10),
       .compatible_data_format = INPUT_DEFAULT_TENSOR_FORMAT_CAM,
       .topic_name = INPUT_TOPIC_NAME_CAM,
     }
@@ -86,7 +89,7 @@ const nitros::NitrosPublisherSubscriberConfigMap CONFIG_MAP = {
   {INPUT_COMPONENT_KEY_CAM_INFO,
     {
       .type = nitros::NitrosPublisherSubscriberType::NEGOTIATED,
-      .qos = rclcpp::QoS(1),
+      .qos = rclcpp::QoS(10),
       .compatible_data_format = INPUT_DEFAULT_TENSOR_FORMAT_CAM_INFO,
       .topic_name = INPUT_TOPIC_NAME_CAM_INFO,
     }
@@ -94,7 +97,7 @@ const nitros::NitrosPublisherSubscriberConfigMap CONFIG_MAP = {
   {OUTPUT_COMPONENT_KEY_TAG_DETECTIONS,
     {
       .type = nitros::NitrosPublisherSubscriberType::NEGOTIATED,
-      .qos = rclcpp::QoS(1),
+      .qos = rclcpp::QoS(10),
       .compatible_data_format = OUTPUT_DEFAULT_TENSOR_FORMAT_TAG_DETECTIONS,
       .topic_name = OUTPUT_TOPIC_NAME_TAG_DETECTIONS,
       .frame_id_source_key = INPUT_COMPONENT_KEY_CAM,
@@ -187,6 +190,11 @@ AprilTagNode::AprilTagNode(const rclcpp::NodeOptions & options)
     &AprilTagNode::AprilTagDetectionsCallback, this,
     std::placeholders::_1, std::placeholders::_2);
   RCLCPP_DEBUG(get_logger(), "[AprilTagNode] Constructor");
+
+  registerSupportedType<nvidia::isaac_ros::nitros::NitrosAprilTagDetectionArray>();
+  registerSupportedType<nvidia::isaac_ros::nitros::NitrosCameraInfo>();
+  registerSupportedType<nvidia::isaac_ros::nitros::NitrosImage>();
+
   startNitrosNode();
 }
 

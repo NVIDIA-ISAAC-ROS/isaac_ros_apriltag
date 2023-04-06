@@ -4,11 +4,19 @@
 
 ## Overview
 
-This ROS2 node uses the NVIDIA GPU-accelerated AprilTags library to detect AprilTags in images and publish their poses, IDs, and additional metadata. This has been tested on ROS2 (Humble) and should build and run on x86_64 and aarch64 (Jetson). It is modeled after and comparable to the ROS2 node for [CPU AprilTags detection](https://github.com/christianrauch/apriltag_ros.git).
+Isaac ROS AprilTag contains a ROS 2 package for detection of [AprilTags](https://april.eecs.umich.edu/software/apriltag#:~:text=AprilTag%20is%20a%20visual%20fiducial,tags%20relative%20to%20the%20camera.), a type of fiducial marker that provides a point of reference or measure. AprilTag detections are GPU-accelerated for high performance.
 
-For more information on the Isaac GEM that this node is based off of, see the latest Isaac SDK documentation [here](https://docs.nvidia.com/isaac/packages/fiducials/doc/apriltags.html).
+<div align="center"><img alt="graph of nodes with AprilTag" src="resources/isaac_ros_apriltag_nodegraph.png" width="800px"/></div>
 
-For more information on AprilTags themselves, including the paper and the reference CPU implementation, click [here](https://april.eecs.umich.edu/software/apriltag.html).
+A common graph of nodes connects from an input camera through rectify and resize to AprilTag. Rectify warps the input camera image into a rectified, undistorted output image; this node may not be necessary if the camera driver provides rectified camera images. Resize is often used to downscale higher resolution cameras into the desired resolution for AprilTags if needed. The input resolution to AprilTag is selected by the required detection distance for the application, as a minimum number of pixels are required to perform an AprilTag detection and classification. For example, an 8mp input image of 3840×2160 may be much larger than necessary and a 4:1 downscale to 1920x1080 could make more efficienct use of compute resources and satisfy the required detection distance of the application. Each of the green nodes in the above diagram is GPU accelerated, allowing for a high-performance compute graph from Argus Camera to ApriTag. For USB and Ethernet cameras, the graph is accelerated from Rectify through AprilTag
+
+<div align="center"><img alt="visual of AprilTag output message information" src="resources/apriltagdetection_message_illustration.png" width="700px"/></div>
+
+As illustrated above, detections are provided in an output array for the number of AprilTag detections in the input image.  Each entry in the array contains the ID (two-dimensional bar code) for the AprilTag, the four corners ((x0, y0), (x1, y1), (x2, y2), (x3, y3)) and center (x, y) of the input image, and the pose of the AprilTag.
+
+> **Note**: This package is a GPU-accelerated drop-in replacement for the [CPU version of ROS Apriltag](https://github.com/christianrauch/apriltag_ros)
+<!-- Split blockquote -->
+> **Note**: For more information, including the paper and the reference CPU implementation, refer to the [AprilTag page](https://april.eecs.umich.edu/software/apriltag.html)
 
 ### Isaac ROS NITROS Acceleration
 
@@ -16,13 +24,13 @@ This package is powered by [NVIDIA Isaac Transport for ROS (NITROS)](https://dev
 
 ## Performance
 
-The performance results of benchmarking the prepared pipelines in this package on supported platforms are below:
+The following table summarizes the per-platform performance statistics of sample graphs that use this package, with links included to the full benchmark output. These benchmark configurations are taken from the [Isaac ROS Benchmark](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark#list-of-isaac-ros-benchmarks) collection, based on the [`ros2_benchmark`](https://github.com/NVIDIA-ISAAC-ROS/ros2_benchmark) framework.
 
-| Pipeline                 | AGX Orin           | Orin Nano        | x86_64 w/ RTX 3060 Ti |
-| ------------------------ | ------------------ | ---------------- | --------------------- |
-| Isaac ROS Apriltag(720p) | 248 fps <br> 5.5ms | 82 fps <br> 14ms | 600 fps <br> 2ms      |
+| Sample Graph                                                                                                                     | Input Size | AGX Orin                                                                                                                                     | Orin NX                                                                                                                                      | Orin Nano 8GB                                                                                                                                      | x86_64 w/ RTX 3060 Ti                                                                                                                                  |
+| -------------------------------------------------------------------------------------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [AprilTag Node](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/main/scripts//isaac_ros_apriltag_node.py)   | 720p       | [108 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/main/results/isaac_ros_apriltag_node-agx_orin.json)<br>11 ms  | [65.5 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/main/results/isaac_ros_apriltag_node-orin_nx.json)<br>17 ms  | [47.1 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/main/results/isaac_ros_apriltag_node-orin_nano_8gb.json)<br>23 ms  | [242 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/main/results/isaac_ros_apriltag_node-x86_64_rtx_3060Ti.json)<br>4.7 ms  |
+| [AprilTag Graph](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/main/scripts//isaac_ros_apriltag_graph.py) | 720p       | [117 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/main/results/isaac_ros_apriltag_graph-agx_orin.json)<br>12 ms | [70.5 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/main/results/isaac_ros_apriltag_graph-orin_nx.json)<br>17 ms | [51.9 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/main/results/isaac_ros_apriltag_graph-orin_nano_8gb.json)<br>24 ms | [270 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/main/results/isaac_ros_apriltag_graph-x86_64_rtx_3060Ti.json)<br>5.0 ms |
 
-These data have been collected per the methodology described [here](https://github.com/NVIDIA-ISAAC-ROS/.github/blob/main/profile/performance-summary.md#methodology).
 
 ## Table of Contents
 
@@ -50,28 +58,28 @@ These data have been collected per the methodology described [here](https://gith
       - [ROS Topics Published](#ros-topics-published)
   - [Troubleshooting](#troubleshooting)
     - [Isaac ROS Troubleshooting](#isaac-ros-troubleshooting)
-- [Updates](#updates)
+  - [Updates](#updates)
 
 ## Latest Update
 
-Update 2022-10-19: Updated OSS licensing
+Update 2023-04-05: Source available GXF extensions
 
 ## Supported Platforms
 
-This package is designed and tested to be compatible with ROS2 Humble running on [Jetson](https://developer.nvidia.com/embedded-computing) or an x86_64 system with an NVIDIA GPU.
+This package is designed and tested to be compatible with ROS 2 Humble running on [Jetson](https://developer.nvidia.com/embedded-computing) or an x86_64 system with an NVIDIA GPU.
 
-> **Note**: Versions of ROS2 earlier than Humble are **not** supported. This package depends on specific ROS2 implementation features that were only introduced beginning with the Humble release.
+> **Note**: Versions of ROS 2 earlier than Humble are **not** supported. This package depends on specific ROS 2 implementation features that were only introduced beginning with the Humble release.
 
-| Platform | Hardware                                                                                                                                                                                                 | Software                                                                                                             | Notes                                                                                                                                                                                   |
-| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Jetson   | [Jetson Orin](https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/jetson-orin/) <br> [Jetson Xavier](https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/jetson-agx-xavier/) | [JetPack 5.0.2](https://developer.nvidia.com/embedded/jetpack)                                                       | For best performance, ensure that [power settings](https://docs.nvidia.com/jetson/archives/r34.1/DeveloperGuide/text/SD/PlatformPowerAndPerformance.html) are configured appropriately. |
-| x86_64   | NVIDIA GPU                                                                                                                                                                                               | [Ubuntu 20.04+](https://releases.ubuntu.com/20.04/) <br> [CUDA 11.6.1+](https://developer.nvidia.com/cuda-downloads) |
+| Platform | Hardware                                                                                                                                                                                                 | Software                                                                                                           | Notes                                                                                                                                                                                   |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Jetson   | [Jetson Orin](https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/jetson-orin/) <br> [Jetson Xavier](https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/jetson-agx-xavier/) | [JetPack 5.1.1](https://developer.nvidia.com/embedded/jetpack)                                                     | For best performance, ensure that [power settings](https://docs.nvidia.com/jetson/archives/r34.1/DeveloperGuide/text/SD/PlatformPowerAndPerformance.html) are configured appropriately. |
+| x86_64   | NVIDIA GPU                                                                                                                                                                                               | [Ubuntu 20.04+](https://releases.ubuntu.com/20.04/) <br> [CUDA 11.8+](https://developer.nvidia.com/cuda-downloads) |
 
 ### Docker
 
 To simplify development, we strongly recommend leveraging the Isaac ROS Dev Docker images by following [these steps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_common/blob/main/docs/dev-env-setup.md). This will streamline your development environment setup with the correct versions of dependencies on both Jetson and x86_64 platforms.
 
-> **Note:** All Isaac ROS Quickstarts, tutorials, and examples have been designed with the Isaac ROS Docker images as a prerequisite.
+> **Note**: All Isaac ROS Quickstarts, tutorials, and examples have been designed with the Isaac ROS Docker images as a prerequisite.
 
 ## Quickstart
 
@@ -231,10 +239,11 @@ ros2 launch isaac_ros_apriltag isaac_ros_apriltag.launch.py --ros-args -p size:=
 
 For solutions to problems with Isaac ROS, please check [here](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_common/blob/main/docs/troubleshooting.md).
 
-# Updates
+## Updates
 
 | Date       | Changes                                                                                 |
 | ---------- | --------------------------------------------------------------------------------------- |
+| 2023-04-05 | Source available GXF extensions                                                         |
 | 2022-10-19 | Updated OSS licensing                                                                   |
 | 2022-08-31 | Update to be compatible with JetPack 5.0.2                                              |
 | 2022-06-30 | Update to use NITROS for improved performance                                           |

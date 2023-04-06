@@ -31,7 +31,7 @@ from sensor_msgs.msg import CameraInfo, Image
 
 @pytest.mark.rostest
 def generate_test_description():
-    """Generate launch description with all ROS2 nodes for testing."""
+    """Generate launch description with all ROS 2 nodes for testing."""
     apriltag_node = ComposableNode(
         package='isaac_ros_apriltag',
         plugin='nvidia::isaac_ros::apriltag::AprilTagNode',

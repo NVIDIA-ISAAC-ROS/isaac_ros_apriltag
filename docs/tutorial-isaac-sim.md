@@ -4,7 +4,9 @@
 
 ## Overview
 
-This tutorial walks you through a pipeline to estimate the 6DOF pose of [AprilTags](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_apriltag) using images from Isaac Sim.
+This tutorial walks you through a graph to estimate the 6DOF pose of [AprilTags](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_apriltag) using images from Isaac Sim.
+
+Last validated with [Isaac Sim 2022.2.1](https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/release_notes.html#id1)
 
 ## Tutorial Walkthrough
 
@@ -24,21 +26,22 @@ This tutorial walks you through a pipeline to estimate the 6DOF pose of [AprilTa
       source install/setup.bash
     ```
 
-4. Launch the pre-composed pipeline launchfile:
+4. Launch the pre-composed graph launchfile:
 
     ```bash
     ros2 launch isaac_ros_apriltag isaac_ros_apriltag_isaac_sim_pipeline.launch.py
     ```
 
 5. Install and launch Isaac Sim following the steps in the [Isaac ROS Isaac Sim Setup Guide](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_common/blob/main/docs/isaac-sim-sil-setup.md)
-6. Open up the Isaac ROS Common USD scene (using the "content" window) located at:
+6. Open up the Isaac ROS Common USD scene (using the *Content* tab) located at:
 
-   `omniverse://localhost/NVIDIA/Assets/Isaac/2022.1/Isaac/Samples/ROS2/Scenario/carter_warehouse_apriltags_worker.usd`
+   ```text
+   http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/2022.2.1/Isaac/Samples/ROS2/Scenario/carter_warehouse_apriltags_worker.usd
+   ```
 
-   Wait for it to load completely.
-   > **Note:** To use a different server, replace `localhost` with `<your_nucleus_server>`
+   And wait for it to load completely.
 7. Press **Play** to start publishing data from Isaac Sim.
-   <div align="center"><img src="../resources/Isaac_sim_april_tag.png" width="800px"/></div>
+   <div align="center"><img src="../resources/Isaac_sim_play.png" width="800px"/></div>
 
 8. In a separate terminal, run RViz to visualize the AprilTag detections:  
 

@@ -4,13 +4,13 @@
 
 ## Overview
 
-This tutorial walks you through a pipeline to estimate the 6DOF pose of [AprilTags](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_apriltag) using images streamed from a USB camera.
+This tutorial walks you through a graph to estimate the 6DOF pose of [AprilTags](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_apriltag) using images streamed from a USB camera.
 
 ## Tutorial Walkthrough
 
 1. Complete the [Quickstart section](../README.md#quickstart) in the main README.
 2. Calibrate the camera following instructions in the [camera calibration tutorial](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_common/blob/main/docs/camera-calibration.md). For step 11, use `isaac_ros_apriltag` in place of `<isaac_ros_package>`
-3. Clone the ROS2 usb_cam package
+3. Clone the ROS 2 usb_cam package
 
     ```bash
     cd ~/workspaces/isaac_ros-dev/src && git clone -b ros2 https://github.com/ros-drivers/usb_cam
@@ -50,6 +50,6 @@ This tutorial walks you through a pipeline to estimate the 6DOF pose of [AprilTa
     rviz2 -d /workspaces/isaac_ros-dev/src/isaac_ros_apriltag/isaac_ros_apriltag/rviz/usb_cam.rviz
     ```
 
-> **Note:** Your camera vendor may offer a specific ROS2-compatible camera driver package and you can use that in place of the usb_cam package.
-
-> **Important:** If you are using a different camera driver package ensure that the camera stream publishes `Image` and `CameraInfo` pairs to the topics `/image` and `/camera_info`, respectively.
+> **Note**: Your camera vendor may offer a specific ROS 2-compatible camera driver package and you can use that in place of the usb_cam package.
+<!-- Split blockquote -->
+> **Important**: If you are using a different camera driver package ensure that the camera stream publishes `Image` and `CameraInfo` pairs to the topics `/image` and `/camera_info`, respectively.

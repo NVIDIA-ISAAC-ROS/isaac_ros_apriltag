@@ -62,16 +62,17 @@ constexpr char APP_YAML_FILENAME[] = "config/apriltag_node.yaml";
 constexpr char PACKAGE_NAME[] = "isaac_ros_apriltag";
 
 const std::vector<std::pair<std::string, std::string>> EXTENSIONS = {
-  {"isaac_ros_nitros", "gxf/std/libgxf_std.so"},
-  {"isaac_ros_nitros", "gxf/multimedia/libgxf_multimedia.so"},
-  {"isaac_ros_nitros", "gxf/serialization/libgxf_serialization.so"},
-  {"isaac_ros_nitros", "gxf/cuda/libgxf_cuda.so"},
-  {"isaac_ros_nitros", "gxf/libgxf_sight.so"},
-  {"isaac_ros_nitros", "gxf/libgxf_atlas.so"},
-  {"isaac_ros_nitros", "gxf/libgxf_isaac_messages.so"},
-  {"isaac_ros_nitros_april_tag_detection_array_type", "gxf/libgxf_fiducials.so"},
-  {"isaac_ros_nitros", "gxf/libgxf_message_compositor.so"},
-  {"isaac_ros_nitros", "gxf/tensorops/libgxf_tensorops.so"}
+  {"isaac_ros_gxf", "gxf/lib/std/libgxf_std.so"},
+  {"isaac_ros_gxf", "gxf/lib/multimedia/libgxf_multimedia.so"},
+  {"isaac_ros_gxf", "gxf/lib/serialization/libgxf_serialization.so"},
+  {"isaac_ros_gxf", "gxf/lib/cuda/libgxf_cuda.so"},
+  {"isaac_ros_gxf", "gxf/lib/libgxf_gxf_helpers.so"},
+  {"isaac_ros_gxf", "gxf/lib/libgxf_sight.so"},
+  {"isaac_ros_gxf", "gxf/lib/libgxf_atlas.so"},
+  {"isaac_ros_gxf", "gxf/lib/libgxf_isaac_messages.so"},
+  {"isaac_ros_gxf", "gxf/lib/libgxf_message_compositor.so"},
+  {"isaac_ros_image_proc", "gxf/lib/image_proc/libgxf_tensorops.so"},
+  {"isaac_ros_apriltag", "gxf/lib/fiducials/libgxf_fiducials.so"}
 };
 const std::vector<std::string> PRESET_EXTENSION_SPEC_NAMES = {
   "isaac_ros_apriltag",
@@ -206,7 +207,7 @@ AprilTagNode::AprilTagNode(const rclcpp::NodeOptions & options)
 
 void AprilTagNode::preLoadGraphCallback()
 {
-  RCLCPP_DEBUG(get_logger(), "[AprilTagNode] pretLoadGraphCallback().");
+  RCLCPP_DEBUG(get_logger(), "[AprilTagNode] preLoadGraphCallback().");
 }
 
 void AprilTagNode::postLoadGraphCallback()

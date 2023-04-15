@@ -254,9 +254,13 @@ components:
     target: camera_image_info_compositor/camera_image_in
 ---
 components:
-- type: nvidia::gxf::GreedyScheduler
-  parameters:
-    clock: clock
-    stop_on_deadlock: false
 - name: clock
   type: nvidia::gxf::RealtimeClock
+- type: nvidia::gxf::MultiThreadScheduler
+  parameters:
+    clock: clock
+    worker_thread_number: 2
+    stop_on_deadlock: false
+- type: nvidia::gxf::JobStatistics
+  parameters:
+    clock: clock

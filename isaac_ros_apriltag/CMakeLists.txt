@@ -28,17 +28,17 @@ ament_auto_find_build_dependencies()
 # Dependencies
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
-# nvapriltags (resolve path from ament_index)
-ament_index_get_resource(NVAPRILTAGS_RELATIVE_PATH nvapriltags isaac_ros_nitros)
+# cuapriltags (resolve path from ament_index)
+ament_index_get_resource(CUAPRILTAGS_RELATIVE_PATH cuapriltags isaac_ros_nitros)
 ament_index_get_prefix_path(AMENT_INDEX_PREFIX_PATHS)
 foreach(PREFIX_PATH IN LISTS AMENT_INDEX_PREFIX_PATHS)
-    if(EXISTS "${PREFIX_PATH}/${NVAPRILTAGS_RELATIVE_PATH}")
-      set(NVAPRILTAGS "${PREFIX_PATH}/${NVAPRILTAGS_RELATIVE_PATH}")
+    if(EXISTS "${PREFIX_PATH}/${CUAPRILTAGS_RELATIVE_PATH}")
+      set(CUAPRILTAGS "${PREFIX_PATH}/${CUAPRILTAGS_RELATIVE_PATH}")
       break()
     endif()
 endforeach()
 
-message( STATUS "Found nvapriltags at ${NVAPRILTAGS}")
+message( STATUS "Found cuapriltags at ${CUAPRILTAGS}")
 
 # ApriltagNode
 ament_auto_add_library(apriltag_node SHARED src/apriltag_node.cpp)

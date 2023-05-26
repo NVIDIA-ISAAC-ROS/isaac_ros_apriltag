@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: NVIDIA CORPORATION & AFFILIATES
-// Copyright (c) 2021-2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// Copyright (c) 2021-2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ using nvidia::gxf::optimizer::GraphIOGroupSupportedDataTypesInfoList;
 #define INPUT_DEFAULT_TENSOR_FORMAT_CAM_INFO        "nitros_camera_info"
 #define INPUT_TOPIC_NAME_CAM_INFO                   "camera_info"
 
-#define OUTPUT_COMPONENT_KEY_TAG_DETECTIONS         "vault/vault"
+#define OUTPUT_COMPONENT_KEY_TAG_DETECTIONS         "sink/sink"
 #define OUTPUT_DEFAULT_TENSOR_FORMAT_TAG_DETECTIONS "nitros_april_tag_detection_array"
 #define OUTPUT_TOPIC_NAME_TAG_DETECTIONS            "tag_detections"
 

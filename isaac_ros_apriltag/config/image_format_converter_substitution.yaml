@@ -1,6 +1,6 @@
 %YAML 1.2
 # SPDX-FileCopyrightText: NVIDIA CORPORATION & AFFILIATES
-# Copyright (c) 2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# Copyright (c) 2022-2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ body:
   groups:
     - entities:
         - components:
-          - type: nvidia::cvcore::tensor_ops::ConvertColorFormat
+          - type: nvidia::isaac::tensor_ops::ConvertColorFormat
             parameters:
               output_type: "RGB_U8"
               receiver: camera_image_in

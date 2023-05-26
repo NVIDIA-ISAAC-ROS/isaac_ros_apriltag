@@ -34,8 +34,8 @@ find_package(GXF ${ISAAC_ROS_GXF_VERSION} MODULE REQUIRED
 )
 include(YamlCpp)
 
-# nvApriltag
-add_library(nvapriltags STATIC IMPORTED)
+# cuApriltags
+add_library(cuapriltags STATIC IMPORTED)
 
 execute_process(COMMAND uname -m COMMAND tr -d '\n' OUTPUT_VARIABLE ARCHITECTURE)
 message( STATUS "Architecture: ${ARCHITECTURE}" )
@@ -44,7 +44,7 @@ if( ${ARCHITECTURE} STREQUAL "x86_64" )
 elseif( ${ARCHITECTURE} STREQUAL "aarch64" )
   set(ARCH_GXF_PATH "lib_aarch64_jetpack51")
 endif()
-set_property(TARGET nvapriltags PROPERTY IMPORTED_LOCATION ${NVAPRILTAGS}/${ARCH_GXF_PATH}/libapril_tagging.a)
+set_property(TARGET cuapriltags PROPERTY IMPORTED_LOCATION ${CUAPRILTAGS}/${ARCH_GXF_PATH}/libcuapriltags.a)
 
 # Fiducials extension
 add_library(gxf_fiducials SHARED
@@ -56,14 +56,14 @@ target_include_directories(gxf_fiducials
   PUBLIC
     include
   PRIVATE
-    ${NVAPRILTAGS}/nvapriltags
+    ${CUAPRILTAGS}/cuapriltags
     ${isaac_ros_nitros_april_tag_detection_array_type_INCLUDE_DIRS}
 )
 target_link_libraries(gxf_fiducials
   PRIVATE
     Eigen3::Eigen
     ${isaac_ros_nitros_april_tag_detection_array_type_LIBRARIES}
-    nvapriltags
+    cuapriltags
   PUBLIC
     GXF::cuda
     GXF::multimedia

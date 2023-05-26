@@ -21,7 +21,7 @@
 #include <utility>
 #include <vector>
 
-#include "nvAprilTags.h"
+#include "cuAprilTags.h"
 #include "engine/core/image/image.hpp"
 #include "engine/gems/image/utils.hpp"
 #include "extensions/fiducials/messages/fiducial_message.hpp"
@@ -51,7 +51,7 @@ gxf::Expected<gxf::Tensor> CornersToTensor(const float2 corners[4],
 
 // Converts pose from april tag detection library to Pose3
 ::isaac::Pose3d DetectionToPose3d(const float translation[3], const float rot_flat[9]) {
-  // Rotation matrix from nvAprilTags is column major
+  // Rotation matrix from cuAprilTags is column major
   ::isaac::Matrix3d rot_matrix;
   rot_matrix << rot_flat[0], rot_flat[3], rot_flat[6],
                 rot_flat[1], rot_flat[4], rot_flat[7],
@@ -66,13 +66,13 @@ gxf::Expected<gxf::Tensor> CornersToTensor(const float2 corners[4],
 
 struct CudaAprilTagDetector::AprilTagData {
   // Handle used to interface with the stereo library.
-  nvAprilTagsHandle april_tags_handle;
+  cuAprilTagsHandle april_tags_handle;
   // CUDA buffers to store the input image.
-  nvAprilTagsImageInput_t input_image;
+  cuAprilTagsImageInput_t input_image;
   // Camera intrinsics
-  nvAprilTagsCameraIntrinsics_t cam_intrinsics;
+  cuAprilTagsCameraIntrinsics_t cam_intrinsics;
   // Output vector of detected Tags
-  std::vector<nvAprilTagsID_t> tags;
+  std::vector<cuAprilTagsID_t> tags;
   // CUDA stream
   cudaStream_t main_stream;
 };
@@ -180,10 +180,10 @@ gxf_result_t CudaAprilTagDetector::tick() {
 
   // Run AprilTags detection
   uint32_t num_tags;
-  const int error = nvAprilTagsDetect(impl_->april_tags_handle, &(impl_->input_image),
+  const int error = cuAprilTagsDetect(impl_->april_tags_handle, &(impl_->input_image),
                                       impl_->tags.data(), &num_tags, max_tags_, impl_->main_stream);
   if (error != 0) {
-    GXF_LOG_ERROR("Call to nvAprilTagsDetect failed with error code %d", error);
+    GXF_LOG_ERROR("Call to cuAprilTagsDetect failed with error code %d", error);
     return GXF_FAILURE;
   }
 
@@ -191,7 +191,7 @@ gxf_result_t CudaAprilTagDetector::tick() {
       CreateFiducialListMessage(context(), num_tags)
       .map([&](FiducialListMessageParts message) -> gxf::Expected<void> {
         for (uint32_t i = 0; i < num_tags; i++) {
-          const nvAprilTagsID_t& tag = impl_->tags[i];
+          const cuAprilTagsID_t& tag = impl_->tags[i];
           message.info[i].value()->type = FiducialInfo::Type::kAprilTag;
           message.info[i].value()->id = tag_family_.get() + "_" + std::to_string(tag.id);
           auto keypoints = CornersToTensor(tag.corners, allocator_);
@@ -208,7 +208,7 @@ gxf_result_t CudaAprilTagDetector::tick() {
 gxf_result_t CudaAprilTagDetector::stop() {
   if (impl_->april_tags_handle != nullptr) {
     cudaStreamDestroy(impl_->main_stream);
-    nvAprilTagsDestroy(impl_->april_tags_handle);
+    cuAprilTagsDestroy(impl_->april_tags_handle);
   }
   return GXF_SUCCESS;
 }
@@ -229,7 +229,7 @@ gxf::Expected<void> CudaAprilTagDetector::createAprilTagDetector(
   // Create AprilTags detector instance and get handle
   const int error = nvCreateAprilTagsDetector(&(impl_->april_tags_handle),
                                               intrinsics->dimensions.x, intrinsics->dimensions.y,
-                                              nvAprilTagsFamily::NVAT_TAG36H11,
+                                              cuAprilTagsFamily::NVAT_TAG36H11,
                                               &(impl_->cam_intrinsics), tag_dimensions_);
   if (error != 0) {
     GXF_LOG_ERROR("Call to nvCreateAprilTagsDetector failed with error code %d", error);

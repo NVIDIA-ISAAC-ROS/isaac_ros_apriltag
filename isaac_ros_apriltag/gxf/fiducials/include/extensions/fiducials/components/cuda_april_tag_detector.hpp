@@ -28,7 +28,7 @@
 namespace nvidia {
 namespace isaac {
 
-// Detects AprilTags in images with nvAprilTags library
+// Detects AprilTags in images with cuAprilTags library
 class CudaAprilTagDetector : public gxf::Codelet {
  public:
   // Explicitly declare constructors and destructors

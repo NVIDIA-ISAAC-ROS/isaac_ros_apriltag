@@ -1,6 +1,6 @@
 %YAML 1.2
 # SPDX-FileCopyrightText: NVIDIA CORPORATION & AFFILIATES
-# Copyright (c) 2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# Copyright (c) 2022-2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -83,7 +83,7 @@ components:
 name: resource
 components:
 - name: adapter
-  type: nvidia::cvcore::tensor_ops::ImageAdapter
+  type: nvidia::isaac::tensor_ops::ImageAdapter
   parameters:
     message_type: "VideoBuffer"
 ---
@@ -114,7 +114,7 @@ components:
     block_size: 14400000
     num_blocks: 40
 - name: image_converter
-  type: nvidia::cvcore::tensor_ops::ConvertColorFormat
+  type: nvidia::isaac::tensor_ops::ConvertColorFormat
   parameters:
     output_type: "RGB_U8"
     receiver: camera_image_in
@@ -145,7 +145,7 @@ components:
   parameters:
     receiver: camera_info_in
     min_size: 1
-  
+
 - name: camera_image_info_out
   type: nvidia::gxf::DoubleBufferTransmitter
   parameters:
@@ -169,7 +169,7 @@ components:
 - name: april_tags_in
   type: nvidia::gxf::DoubleBufferReceiver
   parameters:
-    capacity: 1
+    capacity: 2
     policy: 0
 - type: nvidia::gxf::MessageAvailableSchedulingTerm
   parameters:
@@ -179,13 +179,13 @@ components:
 - name: camera_info_in
   type: nvidia::gxf::DoubleBufferReceiver
   parameters:
-    capacity: 1
+    capacity: 2
     policy: 0
 - type: nvidia::gxf::MessageAvailableSchedulingTerm
   parameters:
     receiver: camera_info_in
     min_size: 1
-  
+
 - name: april_tags_timestamp_out
   type: nvidia::gxf::DoubleBufferTransmitter
   parameters:
@@ -203,7 +203,7 @@ components:
     camera_model_rx: camera_info_in
     tx: april_tags_timestamp_out
 ---
-name: vault
+name: sink
 components:
 - name: signal
   type: nvidia::gxf::DoubleBufferReceiver
@@ -214,12 +214,10 @@ components:
   parameters:
     receiver: signal
     min_size: 1
-- name: vault
-  type: nvidia::gxf::Vault
+- name: sink
+  type: nvidia::isaac_ros::MessageRelay
   parameters:
     source: signal
-    max_waiting_count: 1
-    drop_waiting: false
 ---
 components:
 - name: edge0
@@ -246,7 +244,7 @@ components:
   type: nvidia::gxf::Connection
   parameters:
     source: timestamp_compositor/april_tags_timestamp_out
-    target: vault/signal
+    target: sink/signal
 - name: edge5
   type: nvidia::gxf::Connection
   parameters:
@@ -254,9 +252,14 @@ components:
     target: camera_image_info_compositor/camera_image_in
 ---
 components:
-- type: nvidia::gxf::GreedyScheduler
+- name: clock
+  type: nvidia::gxf::RealtimeClock
+- type: nvidia::gxf::MultiThreadScheduler
   parameters:
     clock: clock
     stop_on_deadlock: false
-- name: clock
-  type: nvidia::gxf::RealtimeClock
+    check_recession_period_ms: 1
+    worker_thread_number: 2
+- type: nvidia::gxf::JobStatistics
+  parameters:
+    clock: clock

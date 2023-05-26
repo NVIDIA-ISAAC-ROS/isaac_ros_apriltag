@@ -30,6 +30,6 @@ GXF_EXT_FACTORY_ADD_0(0xe91d3fa6a42b85ff, 0x966f4e80c607ca9e,
 
 GXF_EXT_FACTORY_ADD(0xeacaaee8b4f923b8, 0xc5c90679ce99113c,
                     nvidia::isaac::CudaAprilTagDetector, nvidia::gxf::Codelet,
-                    "Detects AprilTags in images with nvAprilTags library.");
+                    "Detects AprilTags in images with cuAprilTags library.");
 
 GXF_EXT_FACTORY_END()

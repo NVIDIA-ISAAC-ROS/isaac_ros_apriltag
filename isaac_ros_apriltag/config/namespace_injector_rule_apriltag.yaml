@@ -1,6 +1,6 @@
 %YAML 1.2
 # SPDX-FileCopyrightText: NVIDIA CORPORATION & AFFILIATES
-# Copyright (c) 2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# Copyright (c) 2022-2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,5 +20,5 @@ name: Image Proc Namespace Injector Rule
 operation: namespace_injector
 body:
   components:
-    - type: nvidia::cvcore::tensor_ops::ConvertColorFormat
+    - type: nvidia::isaac::tensor_ops::ConvertColorFormat
       path_parameter_keys: [input_adapter, output_adapter]

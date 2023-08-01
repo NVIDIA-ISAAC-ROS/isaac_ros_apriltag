@@ -22,7 +22,7 @@ GXF_EXT_FACTORY_BEGIN()
 
 GXF_EXT_FACTORY_SET_INFO(0xd8d7816ec0485ad4, 0xff795a414bd445ca, "Fiducials",
                          "Extension containing components for working with fiducials",
-                         "Isaac SDK", "1.0.0", "LICENSE");
+                         "Isaac SDK", "2.0.0", "LICENSE");
 
 GXF_EXT_FACTORY_ADD_0(0xe91d3fa6a42b85ff, 0x966f4e80c607ca9e,
                       nvidia::isaac::FiducialInfo,

@@ -28,7 +28,8 @@ def generate_launch_description():
         remappings=[('/image', '/rgb_left'),
                     ('/camera_info', '/camera_info_left')],
         parameters=[{'size': 0.32,
-                     'max_tags': 64}]
+                     'max_tags': 64,
+                     'tile_size': 4}]
     )
 
     apriltag_container = ComposableNodeContainer(

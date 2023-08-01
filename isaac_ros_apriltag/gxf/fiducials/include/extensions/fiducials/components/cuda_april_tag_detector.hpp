@@ -52,6 +52,7 @@ class CudaAprilTagDetector : public gxf::Codelet {
   gxf::Parameter<gxf::Handle<gxf::Transmitter>> april_tags_;
   gxf::Parameter<gxf::Handle<gxf::Allocator>> allocator_;
   gxf::Parameter<int> max_tags_;
+  gxf::Parameter<uint32_t> tile_size_;
   gxf::Parameter<double> tag_dimensions_;
   gxf::Parameter<std::string> tag_family_;
   gxf::Parameter<std::string> video_buffer_name_;

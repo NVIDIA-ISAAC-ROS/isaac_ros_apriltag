@@ -70,6 +70,7 @@ components:
     april_tags: april_tags_out
     allocator: allocator
     max_tags: 64
+    tile_size: 4
     tag_dimensions: 0.22
 - type: nvidia::gxf::MessageAvailableSchedulingTerm
   parameters:

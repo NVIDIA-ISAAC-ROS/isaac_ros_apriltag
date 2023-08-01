@@ -209,15 +209,16 @@ At this time, the packages under the standard `apriltag_ros` have the following 
 #### Usage
 
 ```bash
-ros2 launch isaac_ros_apriltag isaac_ros_apriltag.launch.py --ros-args -p size:=<size of tag (meters)> -p max_tags:=<max tag count>
+ros2 launch isaac_ros_apriltag isaac_ros_apriltag.launch.py --ros-args -p size:=<size of tag (meters)> -p max_tags:=<max tag count> -p tile_size:=<adaptive thresholding tile size(px)>
 ```
 
 #### ROS Parameters
 
-| ROS Parameter | Type     | Default | Description                                                            |
-| ------------- | -------- | ------- | ---------------------------------------------------------------------- |
-| `size`        | `double` | `0.22`  | The tag edge size in meters, assuming square markers. <br> E.g. `0.22` |
-| `max_tags`    | `int`    | `64`    | The maximum number of tags to be detected. <br> E.g. `64`              |
+| ROS Parameter | Type     | Default | Description                                                              |
+| ------------- | -------- | ------- | ------------------------------------------------------------------------ |
+| `size`        | `double` | `0.22`  | The tag edge size in meters, assuming square markers. <br> E.g. `0.22`   |
+| `max_tags`    | `int`    | `64`    | The maximum number of tags to be detected. <br> E.g. `64`                |
+| `tile_size`   | `uint`   | `4`     | Tile/window size used for adaptive thresholding in pixels. <br> E.g. `4` |
 
 #### ROS Topics Subscribed
 

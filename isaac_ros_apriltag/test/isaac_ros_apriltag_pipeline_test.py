@@ -38,7 +38,8 @@ def generate_test_description():
         name='apriltag',
         namespace=IsaacROSAprilTagPipelineTest.generate_namespace(),
         parameters=[{'size': 0.22,
-                     'max_tags': 64}]
+                     'max_tags': 64,
+                     'tile_size': 4}]
     )
 
     apriltag_container = ComposableNodeContainer(

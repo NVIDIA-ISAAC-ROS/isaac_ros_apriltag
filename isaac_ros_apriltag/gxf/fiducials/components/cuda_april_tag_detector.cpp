@@ -98,6 +98,10 @@ gxf_result_t CudaAprilTagDetector::registerInterface(gxf::Registrar* registrar) 
       "Maximum number of AprilTags that can be detected",
       50);
   result &= registrar->parameter(
+      tile_size_, "tile_size", "Tile Size",
+      "Tile/window size used for adaptive thresholding in pixels",
+      4U);
+  result &= registrar->parameter(
       tag_dimensions_, "tag_dimensions", "Tag Dimensions",
       "AprilTag tag dimensions",
       0.18);
@@ -229,7 +233,7 @@ gxf::Expected<void> CudaAprilTagDetector::createAprilTagDetector(
   // Create AprilTags detector instance and get handle
   const int error = nvCreateAprilTagsDetector(&(impl_->april_tags_handle),
                                               intrinsics->dimensions.x, intrinsics->dimensions.y,
-                                              cuAprilTagsFamily::NVAT_TAG36H11,
+                                              tile_size_, cuAprilTagsFamily::NVAT_TAG36H11,
                                               &(impl_->cam_intrinsics), tag_dimensions_);
   if (error != 0) {
     GXF_LOG_ERROR("Call to nvCreateAprilTagsDetector failed with error code %d", error);

@@ -189,7 +189,8 @@ AprilTagNode::AprilTagNode(const rclcpp::NodeOptions & options)
     EXTENSIONS,
     PACKAGE_NAME),
   size_(declare_parameter<double>("size", 0.22)),
-  max_tags_(declare_parameter<int>("max_tags", 64))
+  max_tags_(declare_parameter<int>("max_tags", 64)),
+  tile_size_(declare_parameter<uint16_t>("tile_size", 4))
 {
   // add callback function for Apriltag Detection array to broadcast to ros tf tree
   config_map_[OUTPUT_COMPONENT_KEY_TAG_DETECTIONS].callback =
@@ -217,6 +218,8 @@ void AprilTagNode::postLoadGraphCallback()
     "cuda_april_tag_component", "nvidia::isaac::CudaAprilTagDetector", "max_tags", max_tags_);
   getNitrosContext().setParameterFloat64(
     "cuda_april_tag_component", "nvidia::isaac::CudaAprilTagDetector", "tag_dimensions", size_);
+  getNitrosContext().setParameterUInt32(
+    "cuda_april_tag_component", "nvidia::isaac::CudaAprilTagDetector", "tile_size", tile_size_);
 }
 
 AprilTagNode::~AprilTagNode() {}

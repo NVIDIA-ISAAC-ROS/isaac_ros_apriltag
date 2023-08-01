@@ -58,6 +58,7 @@ public:
 private:
   const double size_;
   const int max_tags_;
+  const uint32_t tile_size_;
 };
 
 }  // namespace apriltag

@@ -25,8 +25,8 @@ def generate_launch_description():
         package='isaac_ros_apriltag',
         plugin='nvidia::isaac_ros::apriltag::AprilTagNode',
         name='apriltag',
-        remappings=[('/image', '/rgb_left'),
-                    ('/camera_info', '/camera_info_left')],
+        remappings=[('image', 'front_stereo_camera/left_rgb/image_raw'),
+                    ('camera_info', 'front_stereo_camera/left_rgb/camerainfo')],
         parameters=[{'size': 0.32,
                      'max_tags': 64,
                      'tile_size': 4}]

@@ -61,14 +61,18 @@ components:
   parameters:
     capacity: 12
     policy: 0
-- name: allocator
-  type: nvidia::gxf::UnboundedAllocator
+- name: pool
+  type: nvidia::gxf::BlockMemoryPool
+  parameters:
+    storage_type: 0
+    block_size: 64
+    num_blocks: 2560
 - name: cuda_april_tag_detector
   type: nvidia::isaac::CudaAprilTagDetector
   parameters:
     camera_image: camera_image_info_in
     april_tags: april_tags_out
-    allocator: allocator
+    allocator: pool
     max_tags: 64
     tile_size: 4
     tag_dimensions: 0.22

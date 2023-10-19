@@ -50,15 +50,15 @@ gxf::Expected<gxf::Tensor> CornersToTensor(const float2 corners[4],
 }
 
 // Converts pose from april tag detection library to Pose3
-::isaac::Pose3d DetectionToPose3d(const float translation[3], const float rot_flat[9]) {
+Pose3d DetectionToPose3d(const float translation[3], const float rot_flat[9]) {
   // Rotation matrix from cuAprilTags is column major
-  ::isaac::Matrix3d rot_matrix;
+  Matrix3d rot_matrix;
   rot_matrix << rot_flat[0], rot_flat[3], rot_flat[6],
                 rot_flat[1], rot_flat[4], rot_flat[7],
                 rot_flat[2], rot_flat[5], rot_flat[8];
-  return ::isaac::Pose3d{
-    ::isaac::SO3d::FromQuaternion(::isaac::Quaterniond(rot_matrix)),
-    ::isaac::Vector3d(translation[0], translation[1], translation[2])
+  return Pose3d{
+    SO3d::FromQuaternion(Quaterniond(rot_matrix)),
+    Vector3d(translation[0], translation[1], translation[2])
   };
 }
 

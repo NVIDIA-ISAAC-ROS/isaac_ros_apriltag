@@ -32,7 +32,7 @@ find_package(GXF ${ISAAC_ROS_GXF_VERSION} MODULE REQUIRED
     serialization
     std
 )
-include(YamlCpp)
+find_package(yaml-cpp)
 
 # cuApriltags
 add_library(cuapriltags STATIC IMPORTED)

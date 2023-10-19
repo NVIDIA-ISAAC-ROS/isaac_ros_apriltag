@@ -22,9 +22,19 @@
       framerate: 30.0
       io_method: "mmap"
       frame_id: "camera"
-      pixel_format: "yuyv"
-      color_format: "yuv422p"
+      pixel_format: "yuyv2rgb"
       image_width: 1280
       image_height: 720
       camera_name: "test_camera"
       camera_info_url: "package://isaac_ros_apriltag/config/camera_info.yaml"
+      brightness: -1
+      contrast: -1
+      saturation: -1
+      sharpness: -1
+      gain: -1
+      auto_white_balance: true
+      white_balance: 4000
+      autoexposure: true
+      exposure: 100
+      autofocus: false
+      focus: -1

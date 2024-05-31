@@ -1,5 +1,5 @@
 # SPDX-FileCopyrightText: NVIDIA CORPORATION & AFFILIATES
-# Copyright (c) 2021-2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# Copyright (c) 2021-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,19 +19,35 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 import launch
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import ComposableNodeContainer
 from launch_ros.descriptions import ComposableNode
 
 
 def generate_launch_description():
+    launch_args = [
+        DeclareLaunchArgument(
+            'camera_width',
+            default_value='1280',
+            description='The USB camera input width.'),
+        DeclareLaunchArgument(
+            'camera_height',
+            default_value='720',
+            description='The USB camera input height.'),
+    ]
+
+    camera_width = LaunchConfiguration('camera_width')
+    camera_height = LaunchConfiguration('camera_height')
+
     rectify_node = ComposableNode(
         package='isaac_ros_image_proc',
         plugin='nvidia::isaac_ros::image_proc::RectifyNode',
         name='rectify',
         namespace='',
         parameters=[{
-            'output_width': 1280,
-            'output_height': 720,
+            'output_width': camera_width,
+            'output_height': camera_height,
         }]
     )
 
@@ -40,7 +56,10 @@ def generate_launch_description():
         plugin='nvidia::isaac_ros::apriltag::AprilTagNode',
         name='apriltag',
         namespace='',
-        remappings=[('/image', '/image_rect')]
+        remappings=[
+            ('image', 'image_rect'),
+            ('camera_info', 'camera_info_rect')
+        ]
     )
 
     usb_cam_params_path = os.path.join(
@@ -68,4 +87,4 @@ def generate_launch_description():
         output='screen'
     )
 
-    return launch.LaunchDescription([apriltag_container])
+    return launch.LaunchDescription(launch_args + [apriltag_container])

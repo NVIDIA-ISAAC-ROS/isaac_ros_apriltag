@@ -1,5 +1,5 @@
 # SPDX-FileCopyrightText: NVIDIA CORPORATION & AFFILIATES
-# Copyright (c) 2021-2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# Copyright (c) 2021-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,31 +28,15 @@ ament_auto_find_build_dependencies()
 # Dependencies
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
-# cuapriltags (resolve path from ament_index)
-ament_index_get_resource(CUAPRILTAGS_RELATIVE_PATH cuapriltags isaac_ros_nitros)
-ament_index_get_prefix_path(AMENT_INDEX_PREFIX_PATHS)
-foreach(PREFIX_PATH IN LISTS AMENT_INDEX_PREFIX_PATHS)
-    if(EXISTS "${PREFIX_PATH}/${CUAPRILTAGS_RELATIVE_PATH}")
-      set(CUAPRILTAGS "${PREFIX_PATH}/${CUAPRILTAGS_RELATIVE_PATH}")
-      break()
-    endif()
-endforeach()
-
-message( STATUS "Found cuapriltags at ${CUAPRILTAGS}")
-
 # ApriltagNode
 ament_auto_add_library(apriltag_node SHARED src/apriltag_node.cpp)
 rclcpp_components_register_nodes(apriltag_node "nvidia::isaac_ros::apriltag::AprilTagNode")
 set(node_plugins "${node_plugins}nvidia::isaac_ros::apriltag::AprilTagNode;$<TARGET_FILE:apriltag_node>\n")
 target_link_libraries(apriltag_node Eigen3::Eigen)
-
-### Install extensions built from source
-
-# Fiducials
-add_subdirectory(gxf/fiducials)
-install(TARGETS gxf_fiducials DESTINATION share/${PROJECT_NAME}/gxf/lib/fiducials)
-
-### End extensions
+set_target_properties(apriltag_node PROPERTIES
+  BUILD_WITH_INSTALL_RPATH TRUE
+  BUILD_RPATH_USE_ORIGIN TRUE
+  INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -67,4 +51,4 @@ if(BUILD_TESTING)
   add_launch_test(test/isaac_ros_apriltag_pipeline_test.py)
 endif()
 
-ament_auto_package(INSTALL_TO_SHARE config launch)
+ament_auto_package(INSTALL_TO_SHARE config launch rviz)

@@ -16,6 +16,45 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 ---
+name: sync
+components:
+- name: image_in
+  type: nvidia::gxf::DoubleBufferReceiver
+  parameters:
+    capacity: 12
+- type: nvidia::gxf::MessageAvailableSchedulingTerm
+  parameters:
+    receiver: image_in
+    min_size: 1
+- name: camera_info_in
+  type: nvidia::gxf::DoubleBufferReceiver
+  parameters:
+    capacity: 12
+- type: nvidia::gxf::MessageAvailableSchedulingTerm
+  parameters:
+    receiver: camera_info_in
+    min_size: 1
+- name: image_out
+  type: nvidia::gxf::DoubleBufferTransmitter
+  parameters:
+    capacity: 12
+- type: nvidia::gxf::DownstreamReceptiveSchedulingTerm
+  parameters:
+    transmitter: image_out
+    min_size: 1
+- name: camera_info_out
+  type: nvidia::gxf::DoubleBufferTransmitter
+  parameters:
+    capacity: 12
+- type: nvidia::gxf::DownstreamReceptiveSchedulingTerm
+  parameters:
+    transmitter: camera_info_out
+    min_size: 1
+- type: nvidia::gxf::Synchronization
+  parameters:
+    inputs: [image_in, camera_info_in]
+    outputs: [image_out, camera_info_out]
+---
 name: camera_info_broadcaster
 components:
 - type: nvidia::gxf::Broadcast
@@ -25,7 +64,6 @@ components:
   type: nvidia::gxf::DoubleBufferReceiver
   parameters:
     capacity: 1
-    policy: 0
 - type: nvidia::gxf::MessageAvailableSchedulingTerm
   parameters:
     receiver: camera_info_in
@@ -34,7 +72,6 @@ components:
   type: nvidia::gxf::DoubleBufferTransmitter
   parameters:
     capacity: 1
-    policy: 0
 - type: nvidia::gxf::DownstreamReceptiveSchedulingTerm
   parameters:
     transmitter: camera_info_out_1
@@ -43,7 +80,6 @@ components:
   type: nvidia::gxf::DoubleBufferTransmitter
   parameters:
     capacity: 1
-    policy: 0
 - type: nvidia::gxf::DownstreamReceptiveSchedulingTerm
   parameters:
     transmitter: camera_info_out_2
@@ -55,12 +91,10 @@ components:
   type: nvidia::gxf::DoubleBufferReceiver
   parameters:
     capacity: 12
-    policy: 0
 - name: april_tags_out
   type: nvidia::gxf::DoubleBufferTransmitter
   parameters:
     capacity: 12
-    policy: 0
 - name: pool
   type: nvidia::gxf::BlockMemoryPool
   parameters:
@@ -73,9 +107,6 @@ components:
     camera_image: camera_image_info_in
     april_tags: april_tags_out
     allocator: pool
-    max_tags: 64
-    tile_size: 4
-    tag_dimensions: 0.22
 - type: nvidia::gxf::MessageAvailableSchedulingTerm
   parameters:
     receiver: camera_image_info_in
@@ -102,7 +133,6 @@ components:
   type: nvidia::gxf::DoubleBufferReceiver
   parameters:
     capacity: 12
-    policy: 0
 - type: nvidia::gxf::MessageAvailableSchedulingTerm
   parameters:
     receiver: camera_image_in
@@ -111,7 +141,6 @@ components:
   type: nvidia::gxf::DoubleBufferTransmitter
   parameters:
     capacity: 12
-    policy: 0
 - type: nvidia::gxf::DownstreamReceptiveSchedulingTerm
   parameters:
     transmitter: camera_image_out
@@ -139,7 +168,6 @@ components:
   type: nvidia::gxf::DoubleBufferReceiver
   parameters:
     capacity: 1
-    policy: 0
 - type: nvidia::gxf::MessageAvailableSchedulingTerm
   parameters:
     receiver: camera_image_in
@@ -149,7 +177,6 @@ components:
   type: nvidia::gxf::DoubleBufferReceiver
   parameters:
     capacity: 1
-    policy: 0
 - type: nvidia::gxf::MessageAvailableSchedulingTerm
   parameters:
     receiver: camera_info_in
@@ -159,7 +186,6 @@ components:
   type: nvidia::gxf::DoubleBufferTransmitter
   parameters:
     capacity: 1
-    policy: 0
 - type: nvidia::gxf::DownstreamReceptiveSchedulingTerm
   parameters:
     transmitter: camera_image_info_out
@@ -179,7 +205,6 @@ components:
   type: nvidia::gxf::DoubleBufferReceiver
   parameters:
     capacity: 2
-    policy: 0
 - type: nvidia::gxf::MessageAvailableSchedulingTerm
   parameters:
     receiver: april_tags_in
@@ -189,7 +214,6 @@ components:
   type: nvidia::gxf::DoubleBufferReceiver
   parameters:
     capacity: 2
-    policy: 0
 - type: nvidia::gxf::MessageAvailableSchedulingTerm
   parameters:
     receiver: camera_info_in
@@ -199,7 +223,6 @@ components:
   type: nvidia::gxf::DoubleBufferTransmitter
   parameters:
     capacity: 1
-    policy: 0
 - type: nvidia::gxf::DownstreamReceptiveSchedulingTerm
   parameters:
     transmitter: april_tags_timestamp_out
@@ -218,7 +241,6 @@ components:
   type: nvidia::gxf::DoubleBufferReceiver
   parameters:
     capacity: 1
-    policy: 0
 - type: nvidia::gxf::MessageAvailableSchedulingTerm
   parameters:
     receiver: signal
@@ -229,6 +251,14 @@ components:
     source: signal
 ---
 components:
+- type: nvidia::gxf::Connection
+  parameters:
+    source: sync/image_out
+    target: image_converter/camera_image_in
+- type: nvidia::gxf::Connection
+  parameters:
+    source: sync/camera_info_out
+    target: camera_info_broadcaster/camera_info_in
 - name: edge0
   type: nvidia::gxf::Connection
   parameters:
@@ -263,11 +293,10 @@ components:
 components:
 - name: clock
   type: nvidia::gxf::RealtimeClock
-- type: nvidia::gxf::MultiThreadScheduler
+- type: nvidia::gxf::EventBasedScheduler
   parameters:
     clock: clock
     stop_on_deadlock: false
-    check_recession_period_ms: 1
     worker_thread_number: 2
 - type: nvidia::gxf::JobStatistics
   parameters:

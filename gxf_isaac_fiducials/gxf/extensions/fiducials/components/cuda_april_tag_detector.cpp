@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: NVIDIA CORPORATION & AFFILIATES
-// Copyright (c) 2021-2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// Copyright (c) 2021-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,9 +22,9 @@
 #include <vector>
 
 #include "cuAprilTags.h"
-#include "engine/core/image/image.hpp"
-#include "engine/gems/image/utils.hpp"
 #include "extensions/fiducials/messages/fiducial_message.hpp"
+#include "gems/core/image/image.hpp"
+#include "gems/image/utils.hpp"
 #include "gxf/multimedia/video.hpp"
 #include "gxf/std/timestamp.hpp"
 

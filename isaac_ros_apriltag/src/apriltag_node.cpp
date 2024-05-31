@@ -1,11 +1,11 @@
 // SPDX-FileCopyrightText: NVIDIA CORPORATION & AFFILIATES
-// Copyright (c) 2021-2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// Copyright (c) 2021-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+// http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -46,11 +46,11 @@ namespace apriltag
 
 using nvidia::gxf::optimizer::GraphIOGroupSupportedDataTypesInfoList;
 
-#define INPUT_COMPONENT_KEY_CAM                     "image_converter/camera_image_in"
+#define INPUT_COMPONENT_KEY_CAM                     "sync/image_in"
 #define INPUT_DEFAULT_TENSOR_FORMAT_CAM             "nitros_image_bgr8"
 #define INPUT_TOPIC_NAME_CAM                        "image"
 
-#define INPUT_COMPONENT_KEY_CAM_INFO                "camera_info_broadcaster/camera_info_in"
+#define INPUT_COMPONENT_KEY_CAM_INFO                "sync/camera_info_in"
 #define INPUT_DEFAULT_TENSOR_FORMAT_CAM_INFO        "nitros_camera_info"
 #define INPUT_TOPIC_NAME_CAM_INFO                   "camera_info"
 
@@ -62,17 +62,15 @@ constexpr char APP_YAML_FILENAME[] = "config/apriltag_node.yaml";
 constexpr char PACKAGE_NAME[] = "isaac_ros_apriltag";
 
 const std::vector<std::pair<std::string, std::string>> EXTENSIONS = {
-  {"isaac_ros_gxf", "gxf/lib/std/libgxf_std.so"},
-  {"isaac_ros_gxf", "gxf/lib/multimedia/libgxf_multimedia.so"},
   {"isaac_ros_gxf", "gxf/lib/serialization/libgxf_serialization.so"},
   {"isaac_ros_gxf", "gxf/lib/cuda/libgxf_cuda.so"},
-  {"isaac_ros_gxf", "gxf/lib/libgxf_gxf_helpers.so"},
-  {"isaac_ros_gxf", "gxf/lib/libgxf_sight.so"},
-  {"isaac_ros_gxf", "gxf/lib/libgxf_atlas.so"},
-  {"isaac_ros_gxf", "gxf/lib/libgxf_isaac_messages.so"},
-  {"isaac_ros_gxf", "gxf/lib/libgxf_message_compositor.so"},
-  {"isaac_ros_image_proc", "gxf/lib/image_proc/libgxf_tensorops.so"},
-  {"isaac_ros_apriltag", "gxf/lib/fiducials/libgxf_fiducials.so"}
+  {"gxf_isaac_gxf_helpers", "gxf/lib/libgxf_isaac_gxf_helpers.so"},
+  {"gxf_isaac_sight", "gxf/lib/libgxf_isaac_sight.so"},
+  {"gxf_isaac_atlas", "gxf/lib/libgxf_isaac_atlas.so"},
+  {"gxf_isaac_messages", "gxf/lib/libgxf_isaac_messages.so"},
+  {"gxf_isaac_message_compositor", "gxf/lib/libgxf_isaac_message_compositor.so"},
+  {"gxf_isaac_tensorops", "gxf/lib/libgxf_isaac_tensorops.so"},
+  {"gxf_isaac_fiducials", "gxf/lib/libgxf_isaac_fiducials.so"}
 };
 const std::vector<std::string> PRESET_EXTENSION_SPEC_NAMES = {
   "isaac_ros_apriltag",

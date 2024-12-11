@@ -28,11 +28,25 @@ ament_auto_find_build_dependencies()
 # Dependencies
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
-# ApriltagNode
+# cuapriltags (resolve path from ament_index)
+ament_index_get_resource(CUAPRILTAGS_RELATIVE_PATH cuapriltags isaac_ros_nitros)
+ament_index_get_prefix_path(AMENT_INDEX_PREFIX_PATHS)
+foreach(PREFIX_PATH IN LISTS AMENT_INDEX_PREFIX_PATHS)
+    if(EXISTS "${PREFIX_PATH}/${CUAPRILTAGS_RELATIVE_PATH}")
+      set(CUAPRILTAGS "${PREFIX_PATH}/${CUAPRILTAGS_RELATIVE_PATH}")
+      break()
+    endif()
+endforeach()
+message( STATUS "Found cuapriltags at ${CUAPRILTAGS}")
+add_library(cuapriltags STATIC IMPORTED)
+set_property(TARGET cuapriltags PROPERTY IMPORTED_LOCATION ${CUAPRILTAGS}/lib/libcuapriltags.a)
+target_include_directories(cuapriltags INTERFACE "${CUAPRILTAGS}/cuapriltags")
+
+# AprilTagNode
 ament_auto_add_library(apriltag_node SHARED src/apriltag_node.cpp)
 rclcpp_components_register_nodes(apriltag_node "nvidia::isaac_ros::apriltag::AprilTagNode")
 set(node_plugins "${node_plugins}nvidia::isaac_ros::apriltag::AprilTagNode;$<TARGET_FILE:apriltag_node>\n")
-target_link_libraries(apriltag_node Eigen3::Eigen)
+target_link_libraries(apriltag_node Eigen3::Eigen cuapriltags)
 set_target_properties(apriltag_node PROPERTIES
   BUILD_WITH_INSTALL_RPATH TRUE
   BUILD_RPATH_USE_ORIGIN TRUE
@@ -47,8 +61,24 @@ if(BUILD_TESTING)
     cmake_policy(SET CMP0148 OLD)
   endif()
 
+  # Gtest for AprilTag node test
+  ament_add_gtest(apriltag_node_test test/apriltag_node_test.cpp)
+  target_include_directories(apriltag_node_test PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+  )
+  target_link_libraries(apriltag_node_test apriltag_node)
+
   find_package(launch_testing_ament_cmake REQUIRED)
-  add_launch_test(test/isaac_ros_apriltag_pipeline_test.py)
+  add_launch_test(test/isaac_ros_apriltag_pol_test.py)
+  add_launch_test(test/isaac_ros_apriltag_mono8_test.py)
+  add_launch_test(test/isaac_ros_apriltag_backends_compare_test.py)
 endif()
+
+
+# Embed versioning information into installed files
+ament_index_get_resource(ISAAC_ROS_COMMON_CMAKE_PATH isaac_ros_common_cmake_path isaac_ros_common)
+include("${ISAAC_ROS_COMMON_CMAKE_PATH}/isaac_ros_common-version-info.cmake")
+generate_version_info(${PROJECT_NAME})
 
 ament_auto_package(INSTALL_TO_SHARE config launch rviz)

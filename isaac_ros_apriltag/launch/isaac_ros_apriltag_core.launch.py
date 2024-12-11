@@ -19,6 +19,8 @@ from typing import Any, Dict
 
 from isaac_ros_examples import IsaacROSLaunchFragment
 import launch
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import ComposableNodeContainer
 from launch_ros.descriptions import ComposableNode
 
@@ -27,6 +29,9 @@ class IsaacROSAprilTagLaunchFragment(IsaacROSLaunchFragment):
 
     @staticmethod
     def get_composable_nodes(interface_specs: Dict[str, Any]) -> Dict[str, ComposableNode]:
+        # Apriltag parameters
+        tag_family = LaunchConfiguration('tag_family')
+        backends = LaunchConfiguration('backends')
         return {
             'apriltag_node': ComposableNode(
                 package='isaac_ros_apriltag',
@@ -36,13 +41,31 @@ class IsaacROSAprilTagLaunchFragment(IsaacROSLaunchFragment):
                 parameters=[{
                     'size': 0.22,
                     'max_tags': 64,
-                    'tile_size': 4}
+                    'tile_size': 4,
+                    'tag_family': tag_family,
+                    'backends': backends}
                 ],
                 remappings=[
                     ('image', 'image_rect'),
                     ('camera_info', 'camera_info_rect')
                 ]
             )
+        }
+
+    @staticmethod
+    def get_launch_actions(interface_specs: Dict[str, Any]) -> \
+            Dict[str, launch.actions.OpaqueFunction]:
+        return {
+            'tag_family': DeclareLaunchArgument(
+                'tag_family',
+                default_value='tag36h11',
+                description='Tag family of Apriltags to detect.'
+            ),
+            'backends': DeclareLaunchArgument(
+                'backends',
+                default_value='CUDA',
+                description='VPI compute backends to perform detection with.'
+            ),
         }
 
 

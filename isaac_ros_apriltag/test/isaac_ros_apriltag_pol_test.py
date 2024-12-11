@@ -119,14 +119,21 @@ class IsaacROSAprilTagPipelineTest(IsaacROSBaseTest):
 
                 corners_message = 'Corners detection is not accurate'
                 center_message = 'Center detection is not accurate'
+                translation_message = 'Translation is not accurate'
+                orientation_message = 'Orientation is not accurate'
+
                 # Allow for 2 pixels of error in detection
                 delta = 2
+                delta_translation = 0.01  # 1 cm threshold
+                delta_quaternion = 0.01  # numerical precision only
+
                 # Ground truth data was obtained from generated image
-                # found at ../image.png and ../test_cases/apritlag0
+                # found at ../image.png and ../test_cases/apriltag0
                 self.assertAlmostEqual(tag_detection.center.x, 926.0, None,
                                        center_message, delta)
                 self.assertAlmostEqual(tag_detection.center.y, 547.0, None,
                                        center_message, delta)
+
                 self.assertAlmostEqual(tag_detection.corners[0].x, 1044.0, None,
                                        corners_message, delta)
                 self.assertAlmostEqual(tag_detection.corners[0].y, 665.0, None,
@@ -144,8 +151,29 @@ class IsaacROSAprilTagPipelineTest(IsaacROSBaseTest):
                 self.assertAlmostEqual(tag_detection.corners[3].y, 429.0, None,
                                        corners_message, delta)
 
+                self.assertAlmostEqual(
+                    tag_detection.pose.pose.pose.position.x, 0.255342,
+                    None, translation_message, delta_translation)
+                self.assertAlmostEqual(
+                    tag_detection.pose.pose.pose.position.y, 0.098358,
+                    None, translation_message, delta_translation)
+                self.assertAlmostEqual(
+                    tag_detection.pose.pose.pose.position.z, 0.403961,
+                    None, translation_message, delta_translation)
+
+                self.assertAlmostEqual(
+                    tag_detection.pose.pose.pose.orientation.w, 0.0,
+                    None, orientation_message, delta_quaternion)
+                self.assertAlmostEqual(
+                    tag_detection.pose.pose.pose.orientation.x, 0.0,
+                    None, orientation_message, delta_quaternion)
+                self.assertAlmostEqual(
+                    tag_detection.pose.pose.pose.orientation.y, 0.0,
+                    None, orientation_message, delta_quaternion)
+                self.assertAlmostEqual(
+                    tag_detection.pose.pose.pose.orientation.z, 1.0,
+                    None, orientation_message, delta_quaternion)
         finally:
-            pass
             self.assertTrue(self.node.destroy_subscription(tag_detections_sub))
             self.assertTrue(self.node.destroy_publisher(image_pub))
             self.assertTrue(self.node.destroy_publisher(camera_info_pub))

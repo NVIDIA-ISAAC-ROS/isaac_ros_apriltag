@@ -353,7 +353,7 @@ struct AprilTagNode::VPIAprilTagImpl : AprilTagNode::AprilTagImpl
     }
 
     node.detections_pub_->publish(msg_detections);
-    node.tf_pub_->publish(tfs);
+    node.tf_broadcaster_->sendTransform(tfs.transforms);
 
     // Cleanup
     CHECK_STATUS(vpiArrayUnlock(detections_pose_array));
@@ -532,7 +532,7 @@ struct AprilTagNode::CUAprilTagImpl : AprilTagNode::AprilTagImpl
     }
 
     node.detections_pub_->publish(msg_detections);
-    node.tf_pub_->publish(tfs);
+    node.tf_broadcaster_->sendTransform(tfs.transforms);
   }
 
   ~CUAprilTagImpl()
@@ -555,7 +555,6 @@ AprilTagNode::AprilTagNode(const rclcpp::NodeOptions & options)
   image_sub_{},
   camera_info_sub_{},
   camera_image_sync_{ExactPolicy{3}, image_sub_, camera_info_sub_},
-  tf_pub_(create_publisher<tf2_msgs::msg::TFMessage>("tf", rclcpp::QoS(100))),
   detections_pub_{create_publisher<isaac_ros_apriltag_interfaces::msg::AprilTagDetectionArray>(
       "tag_detections", rclcpp::QoS(1))}
 {
@@ -582,6 +581,9 @@ AprilTagNode::AprilTagNode(const rclcpp::NodeOptions & options)
     RCLCPP_FATAL(get_logger(), os.str().c_str());
     throw std::runtime_error(os.str());
   }
+
+  // Create the TF broadcaster
+  tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(this);
 
   // Setup subscripts
   camera_image_sync_.registerCallback(

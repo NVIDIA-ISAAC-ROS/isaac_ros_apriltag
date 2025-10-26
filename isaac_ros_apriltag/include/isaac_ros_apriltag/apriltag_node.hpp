@@ -81,9 +81,11 @@ private:
   message_filters::Synchronizer<ExactPolicy> camera_image_sync_;
 
   // Publishers
-  const rclcpp::Publisher<tf2_msgs::msg::TFMessage>::SharedPtr tf_pub_;
   const rclcpp::Publisher<isaac_ros_apriltag_interfaces::msg::AprilTagDetectionArray>::SharedPtr
     detections_pub_;
+
+  // TF broadcaster
+  std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 
   struct CUAprilTagImpl;
   struct VPIAprilTagImpl;
@@ -94,5 +96,4 @@ private:
 }  // namespace apriltag
 }  // namespace isaac_ros
 }  // namespace nvidia
-
 #endif  // ISAAC_ROS_APRILTAG__APRILTAG_NODE_HPP_

@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: NVIDIA CORPORATION & AFFILIATES
-// Copyright (c) 2021-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// Copyright (c) 2021-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@
 
 #include "isaac_ros_apriltag/apriltag_node.hpp"
 
+#include <Eigen/Dense>
+
+#include <cuda_runtime.h>
 #include <vpi/VPI.h>
 #include <vpi/algo/AprilTags.h>
 #include <vpi/algo/ConvertImageFormat.h>
 #include <vpi/Types.h>
-
-#include <cuda_runtime.h>
-
 #include <algorithm>
 #include <cstdio>
 #include <iterator>
@@ -32,7 +32,6 @@
 #include <utility>
 
 #include "cuAprilTags.h"
-#include "eigen3/Eigen/Dense"
 #include "isaac_ros_common/vpi_utilities.hpp"
 
 namespace nvidia
@@ -230,12 +229,13 @@ struct AprilTagNode::VPIAprilTagImpl : AprilTagNode::AprilTagImpl
     data->bufferType = VPI_IMAGE_BUFFER_CUDA_PITCH_LINEAR;
     data->buffer.pitch.format = ToVPIImageFormatFromROSEncoding(nitros_image_view.GetEncoding());
     data->buffer.pitch.numPlanes = 1;
-    data->buffer.pitch.planes[0].data =
-      const_cast<void *>(reinterpret_cast<const void *>(nitros_image_view.GetGpuData()));
+    data->buffer.pitch.planes[0].pBase =
+      const_cast<unsigned char *>(nitros_image_view.GetGpuData());
     data->buffer.pitch.planes[0].height = camera_info->height;
     data->buffer.pitch.planes[0].width = camera_info->width;
     data->buffer.pitch.planes[0].pixelType = VPI_PIXEL_TYPE_DEFAULT;
     data->buffer.pitch.planes[0].pitchBytes = nitros_image_view.GetStride();
+    data->buffer.pitch.planes[0].offsetBytes = 0;
     CHECK_STATUS(vpiImageCreateWrapper(data, nullptr, VPI_BACKEND_CUDA, &input_image_));
 
     RCLCPP_INFO(
@@ -258,8 +258,8 @@ struct AprilTagNode::VPIAprilTagImpl : AprilTagNode::AprilTagImpl
     const sensor_msgs::msg::CameraInfo::ConstSharedPtr & camera_info) override
   {
     // Update input image buffer in wrapper
-    input_image_data_.buffer.pitch.planes[0].data =
-      const_cast<void *>(reinterpret_cast<const void *>(nitros_image_view.GetGpuData()));
+    input_image_data_.buffer.pitch.planes[0].pBase =
+      const_cast<unsigned char *>(nitros_image_view.GetGpuData());
     CHECK_STATUS(vpiImageSetWrapper(input_image_, &input_image_data_))
 
     // Submit image conversion to U8
@@ -353,7 +353,7 @@ struct AprilTagNode::VPIAprilTagImpl : AprilTagNode::AprilTagImpl
     }
 
     node.detections_pub_->publish(msg_detections);
-    node.tf_pub_->publish(tfs);
+    node.tf_broadcaster_->sendTransform(tfs.transforms);
 
     // Cleanup
     CHECK_STATUS(vpiArrayUnlock(detections_pose_array));
@@ -532,7 +532,7 @@ struct AprilTagNode::CUAprilTagImpl : AprilTagNode::AprilTagImpl
     }
 
     node.detections_pub_->publish(msg_detections);
-    node.tf_pub_->publish(tfs);
+    node.tf_broadcaster_->sendTransform(tfs.transforms);
   }
 
   ~CUAprilTagImpl()
@@ -555,7 +555,6 @@ AprilTagNode::AprilTagNode(const rclcpp::NodeOptions & options)
   image_sub_{},
   camera_info_sub_{},
   camera_image_sync_{ExactPolicy{3}, image_sub_, camera_info_sub_},
-  tf_pub_(create_publisher<tf2_msgs::msg::TFMessage>("tf", rclcpp::QoS(100))),
   detections_pub_{create_publisher<isaac_ros_apriltag_interfaces::msg::AprilTagDetectionArray>(
       "tag_detections", rclcpp::QoS(1))}
 {
@@ -579,9 +578,14 @@ AprilTagNode::AprilTagNode(const rclcpp::NodeOptions & options)
       supported_tag_families.begin(), supported_tag_families.end(), [&os](auto & entry) {
         os << ToString(entry) << std::endl;
       });
-    RCLCPP_FATAL(get_logger(), os.str().c_str());
+    RCLCPP_FATAL(
+      get_logger(), "Tag family not supported by specified backend: '%s'",
+      tag_family_.c_str());
     throw std::runtime_error(os.str());
   }
+
+  // Create the TF broadcaster
+  tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(this);
 
   // Setup subscripts
   camera_image_sync_.registerCallback(

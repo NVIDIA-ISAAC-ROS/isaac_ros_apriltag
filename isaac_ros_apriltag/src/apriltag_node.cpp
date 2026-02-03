@@ -32,7 +32,7 @@
 #include <utility>
 
 #include "cuAprilTags.h"
-#include "isaac_ros_common/vpi_utilities.hpp"
+#include "isaac_ros_vpi_utils/vpi_utilities.hpp"
 
 namespace nvidia
 {
@@ -195,12 +195,13 @@ struct AprilTagNode::VPIAprilTagImpl : AprilTagNode::AprilTagImpl
     AprilTagNode::AprilTagImpl::Initialize(node, nitros_image_view, camera_info);
 
     try {
-      CHECK_STATUS(vpiStreamCreate(node.backends_ | VPI_BACKEND_CPU | VPI_BACKEND_CUDA, &stream_));
+      CHECK_VPI_STATUS(vpiStreamCreate(node.backends_ | VPI_BACKEND_CPU | VPI_BACKEND_CUDA,
+        &stream_));
     } catch (std::runtime_error & e) {
       RCLCPP_ERROR(node.get_logger(), "Error while initializing: %s", e.what());
     }
 
-    CHECK_STATUS(vpiInitAprilTagDecodeParams(&params_));
+    CHECK_VPI_STATUS(vpiInitAprilTagDecodeParams(&params_));
 
     params_.family = tag_family_;
 
@@ -218,7 +219,7 @@ struct AprilTagNode::VPIAprilTagImpl : AprilTagNode::AprilTagImpl
     std::memcpy(&cam_intrinsics_, &cam_intrinsics, sizeof(VPICameraIntrinsic));
 
     // Detector
-    CHECK_STATUS(
+    CHECK_VPI_STATUS(
       vpiCreateAprilTagDetector(
         node.backends_, camera_info->width,
         camera_info->height, &params_, &detector_));
@@ -236,7 +237,7 @@ struct AprilTagNode::VPIAprilTagImpl : AprilTagNode::AprilTagImpl
     data->buffer.pitch.planes[0].pixelType = VPI_PIXEL_TYPE_DEFAULT;
     data->buffer.pitch.planes[0].pitchBytes = nitros_image_view.GetStride();
     data->buffer.pitch.planes[0].offsetBytes = 0;
-    CHECK_STATUS(vpiImageCreateWrapper(data, nullptr, VPI_BACKEND_CUDA, &input_image_));
+    CHECK_VPI_STATUS(vpiImageCreateWrapper(data, nullptr, VPI_BACKEND_CUDA, &input_image_));
 
     RCLCPP_INFO(
       node.get_logger(), "Initialized with input image (%dx%d), encoding=%s, pitch=%d",
@@ -246,7 +247,7 @@ struct AprilTagNode::VPIAprilTagImpl : AprilTagNode::AprilTagImpl
       data->buffer.pitch.planes[0].pitchBytes);
 
     // Input monochrome image
-    CHECK_STATUS(
+    CHECK_VPI_STATUS(
       vpiImageCreate(
         camera_info->width, camera_info->height,
         VPI_IMAGE_FORMAT_U8, 0, &input_monochrome_image_));
@@ -260,42 +261,43 @@ struct AprilTagNode::VPIAprilTagImpl : AprilTagNode::AprilTagImpl
     // Update input image buffer in wrapper
     input_image_data_.buffer.pitch.planes[0].pBase =
       const_cast<unsigned char *>(nitros_image_view.GetGpuData());
-    CHECK_STATUS(vpiImageSetWrapper(input_image_, &input_image_data_))
+    CHECK_VPI_STATUS(vpiImageSetWrapper(input_image_, &input_image_data_))
 
     // Submit image conversion to U8
     VPIConvertImageFormatParams convert_params;
-    CHECK_STATUS(vpiInitConvertImageFormatParams(&convert_params));
+    CHECK_VPI_STATUS(vpiInitConvertImageFormatParams(&convert_params));
 
-    CHECK_STATUS(
+    CHECK_VPI_STATUS(
       vpiSubmitConvertImageFormat(
         stream_, VPI_BACKEND_CUDA, input_image_,
         input_monochrome_image_, &convert_params));
 
     // Perform AprilTag detection
     VPIArray detections_array;
-    CHECK_STATUS(
+    CHECK_VPI_STATUS(
       vpiArrayCreate(
         node.max_tags_, VPI_ARRAY_TYPE_APRILTAG_DETECTION, 0,
         &detections_array));
-    CHECK_STATUS(
+    CHECK_VPI_STATUS(
       vpiSubmitAprilTagDetector(
         stream_, node.backends_, detector_, node.max_tags_,
         input_monochrome_image_, detections_array));
 
     VPIArray detections_pose_array;
-    CHECK_STATUS(vpiArrayCreate(node.max_tags_, VPI_ARRAY_TYPE_POSE, 0, &detections_pose_array));
-    CHECK_STATUS(
+    CHECK_VPI_STATUS(vpiArrayCreate(node.max_tags_, VPI_ARRAY_TYPE_POSE, 0,
+      &detections_pose_array));
+    CHECK_VPI_STATUS(
       vpiSubmitAprilTagPoseEstimation(
         stream_, VPI_BACKEND_CPU, detections_array,
         cam_intrinsics_, node.size_, detections_pose_array));
 
-    CHECK_STATUS(vpiStreamSync(stream_));
+    CHECK_VPI_STATUS(vpiStreamSync(stream_));
 
     int32_t num_detections = 0;
-    CHECK_STATUS(vpiArrayGetSize(detections_array, &num_detections));
+    CHECK_VPI_STATUS(vpiArrayGetSize(detections_array, &num_detections));
 
     VPIArrayData detections_data;
-    CHECK_STATUS(
+    CHECK_VPI_STATUS(
       vpiArrayLockData(
         detections_array, VPI_LOCK_READ, VPI_ARRAY_BUFFER_HOST_AOS,
         &detections_data));
@@ -303,7 +305,7 @@ struct AprilTagNode::VPIAprilTagImpl : AprilTagNode::AprilTagImpl
       reinterpret_cast<VPIAprilTagDetection *>(detections_data.buffer.aos.data);
 
     VPIArrayData detections_pose_data;
-    CHECK_STATUS(
+    CHECK_VPI_STATUS(
       vpiArrayLockData(
         detections_pose_array, VPI_LOCK_READ, VPI_ARRAY_BUFFER_HOST_AOS,
         &detections_pose_data));
@@ -356,10 +358,10 @@ struct AprilTagNode::VPIAprilTagImpl : AprilTagNode::AprilTagImpl
     node.tf_broadcaster_->sendTransform(tfs.transforms);
 
     // Cleanup
-    CHECK_STATUS(vpiArrayUnlock(detections_pose_array));
+    CHECK_VPI_STATUS(vpiArrayUnlock(detections_pose_array));
     vpiArrayDestroy(detections_pose_array);
 
-    CHECK_STATUS(vpiArrayUnlock(detections_array));
+    CHECK_VPI_STATUS(vpiArrayUnlock(detections_array));
     vpiArrayDestroy(detections_array);
   }
 
@@ -551,7 +553,7 @@ AprilTagNode::AprilTagNode(const rclcpp::NodeOptions & options)
   size_(declare_parameter<double>("size", 0.22)),
   tile_size_(declare_parameter<uint16_t>("tile_size", 4)),
   tag_family_(declare_parameter<std::string>("tag_family", "tag36h11")),
-  backends_{::isaac_ros::common::DeclareVPIBackendParameter(this, VPI_BACKEND_CUDA)},
+  backends_{nvidia::isaac_ros::vpi_utils::DeclareVPIBackendParameter(this, VPI_BACKEND_CUDA)},
   image_sub_{},
   camera_info_sub_{},
   camera_image_sync_{ExactPolicy{3}, image_sub_, camera_info_sub_},

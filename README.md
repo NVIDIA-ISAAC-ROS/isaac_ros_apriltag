@@ -2,7 +2,7 @@
 
 NVIDIA-accelerated AprilTag detection and pose estimation.
 
-<div align="center"><a class="reference internal image-reference" href="https://media.githubusercontent.com/media/NVIDIA-ISAAC-ROS/.github/release-4.0/resources/isaac_ros_docs/repositories_and_packages/isaac_ros_apriltag/isaac_ros_apriltag_sample_crop.gif/"><img alt="image" src="https://media.githubusercontent.com/media/NVIDIA-ISAAC-ROS/.github/release-4.0/resources/isaac_ros_docs/repositories_and_packages/isaac_ros_apriltag/isaac_ros_apriltag_sample_crop.gif/" width="550px"/></a></div>
+<div align="center"><a class="reference internal image-reference" href="https://media.githubusercontent.com/media/NVIDIA-ISAAC-ROS/.github/release-4.1/resources/isaac_ros_docs/repositories_and_packages/isaac_ros_apriltag/isaac_ros_apriltag_sample_crop.gif/"><img alt="image" src="https://media.githubusercontent.com/media/NVIDIA-ISAAC-ROS/.github/release-4.1/resources/isaac_ros_docs/repositories_and_packages/isaac_ros_apriltag/isaac_ros_apriltag_sample_crop.gif/" width="550px"/></a></div>
 
 ## Overview
 
@@ -11,7 +11,7 @@ Isaac ROS AprilTag contains a ROS 2 package for detection of
 a type of fiducial marker that provides a point of reference or measure.
 AprilTag detections are NVIDIA-accelerated for high performance.
 
-<div align="center"><a class="reference internal image-reference" href="https://media.githubusercontent.com/media/NVIDIA-ISAAC-ROS/.github/release-4.0/resources/isaac_ros_docs/repositories_and_packages/isaac_ros_apriltag/isaac_ros_apriltag_nodegraph.png/"><img alt="image" src="https://media.githubusercontent.com/media/NVIDIA-ISAAC-ROS/.github/release-4.0/resources/isaac_ros_docs/repositories_and_packages/isaac_ros_apriltag/isaac_ros_apriltag_nodegraph.png/" width="800px"/></a></div>
+<div align="center"><a class="reference internal image-reference" href="https://media.githubusercontent.com/media/NVIDIA-ISAAC-ROS/.github/release-4.1/resources/isaac_ros_docs/repositories_and_packages/isaac_ros_apriltag/isaac_ros_apriltag_nodegraph.png/"><img alt="image" src="https://media.githubusercontent.com/media/NVIDIA-ISAAC-ROS/.github/release-4.1/resources/isaac_ros_docs/repositories_and_packages/isaac_ros_apriltag/isaac_ros_apriltag_nodegraph.png/" width="800px"/></a></div>
 
 A common graph of nodes connects from an input camera through rectify
 and resize to AprilTag. Rectify warps the input camera image into a
@@ -25,11 +25,10 @@ For example, an 8mp input image of 3840×2160 may be much larger than
 necessary and a 4:1 downscale to 1920x1080 could make more efficient
 use of compute resources and satisfy the required detection distance of
 the application. Each of the green nodes in the above diagram is NVIDIA
-accelerated, allowing for a high-performance compute graph from Argus
-Camera to ApriTag. For USB and Ethernet cameras, the graph is
-accelerated from Rectify through AprilTag detection.
+accelerated, allowing for a high-performance compute graph from camera
+input to AprilTag detection.
 
-<div align="center"><a class="reference internal image-reference" href="https://media.githubusercontent.com/media/NVIDIA-ISAAC-ROS/.github/release-4.0/resources/isaac_ros_docs/repositories_and_packages/isaac_ros_apriltag/apriltagdetection_message_illustration.png/"><img alt="image" src="https://media.githubusercontent.com/media/NVIDIA-ISAAC-ROS/.github/release-4.0/resources/isaac_ros_docs/repositories_and_packages/isaac_ros_apriltag/apriltagdetection_message_illustration.png/" width="700px"/></a></div>
+<div align="center"><a class="reference internal image-reference" href="https://media.githubusercontent.com/media/NVIDIA-ISAAC-ROS/.github/release-4.1/resources/isaac_ros_docs/repositories_and_packages/isaac_ros_apriltag/apriltagdetection_message_illustration.png/"><img alt="image" src="https://media.githubusercontent.com/media/NVIDIA-ISAAC-ROS/.github/release-4.1/resources/isaac_ros_docs/repositories_and_packages/isaac_ros_apriltag/apriltagdetection_message_illustration.png/" width="700px"/></a></div>
 
 As illustrated above, detections are provided in an output array for the
 number of AprilTag detections in the input image. Each entry in the
@@ -59,8 +58,8 @@ This package is powered by [NVIDIA Isaac Transport for ROS (NITROS)](https://dev
 
 | Sample Graph<br/><br/>                                                                                                                                                           | Input Size<br/><br/>   | AGX Thor<br/><br/>                                                                                                                                                      | x86_64 w/ RTX 5090<br/><br/>                                                                                                                                             |
 |----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [AprilTag Node](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.0/benchmarks/isaac_ros_apriltag_benchmark/scripts/isaac_ros_apriltag_node.py)<br/><br/>   | 720p<br/><br/>         | [392 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.0/results/isaac_ros_apriltag_node-agx_thor.json)<br/><br/><br/>10 ms @ 30Hz<br/><br/>  | [596 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.0/results/isaac_ros_apriltag_node-x86-5090.json)<br/><br/><br/>2.3 ms @ 30Hz<br/><br/>  |
-| [AprilTag Graph](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.0/benchmarks/isaac_ros_apriltag_benchmark/scripts/isaac_ros_apriltag_graph.py)<br/><br/> | 720p<br/><br/>         | [366 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.0/results/isaac_ros_apriltag_graph-agx_thor.json)<br/><br/><br/>13 ms @ 30Hz<br/><br/> | [596 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.0/results/isaac_ros_apriltag_graph-x86-5090.json)<br/><br/><br/>4.1 ms @ 30Hz<br/><br/> |
+| [AprilTag Node](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.1/benchmarks/isaac_ros_apriltag_benchmark/scripts/isaac_ros_apriltag_node.py)<br/><br/>   | 720p<br/><br/>         | [392 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.1/results/isaac_ros_apriltag_node-agx_thor.json)<br/><br/><br/>10 ms @ 30Hz<br/><br/>  | [596 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.1/results/isaac_ros_apriltag_node-x86-5090.json)<br/><br/><br/>2.3 ms @ 30Hz<br/><br/>  |
+| [AprilTag Graph](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.1/benchmarks/isaac_ros_apriltag_benchmark/scripts/isaac_ros_apriltag_graph.py)<br/><br/> | 720p<br/><br/>         | [366 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.1/results/isaac_ros_apriltag_graph-agx_thor.json)<br/><br/><br/>13 ms @ 30Hz<br/><br/> | [596 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.1/results/isaac_ros_apriltag_graph-x86-5090.json)<br/><br/><br/>4.1 ms @ 30Hz<br/><br/> |
 
 ---
 
@@ -80,4 +79,4 @@ Please visit the [Isaac ROS Documentation](https://nvidia-isaac-ros.github.io/re
 
 ## Latest
 
-Update 2025-10-24: Use TF2 Transform Broadcaster to publish AprilTag poses, courtesy of StereoLabs
+Update 2026-02-02: Support for two new Docker-optional development and deployment modes

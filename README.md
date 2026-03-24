@@ -2,7 +2,7 @@
 
 NVIDIA-accelerated AprilTag detection and pose estimation.
 
-<div align="center"><a class="reference internal image-reference" href="https://media.githubusercontent.com/media/NVIDIA-ISAAC-ROS/.github/release-4.2/resources/isaac_ros_docs/repositories_and_packages/isaac_ros_apriltag/isaac_ros_apriltag_sample_crop.gif/"><img alt="image" src="https://media.githubusercontent.com/media/NVIDIA-ISAAC-ROS/.github/release-4.2/resources/isaac_ros_docs/repositories_and_packages/isaac_ros_apriltag/isaac_ros_apriltag_sample_crop.gif/" width="550px"/></a></div>
+<div align="center"><a class="reference internal image-reference" href="https://media.githubusercontent.com/media/NVIDIA-ISAAC-ROS/.github/release-4.3/resources/isaac_ros_docs/repositories_and_packages/isaac_ros_apriltag/isaac_ros_apriltag_sample_crop.gif/"><img alt="image" src="https://media.githubusercontent.com/media/NVIDIA-ISAAC-ROS/.github/release-4.3/resources/isaac_ros_docs/repositories_and_packages/isaac_ros_apriltag/isaac_ros_apriltag_sample_crop.gif/" width="550px"/></a></div>
 
 ## Overview
 
@@ -11,7 +11,7 @@ Isaac ROS AprilTag contains a ROS 2 package for detection of
 a type of fiducial marker that provides a point of reference or measure.
 AprilTag detections are NVIDIA-accelerated for high performance.
 
-<div align="center"><a class="reference internal image-reference" href="https://media.githubusercontent.com/media/NVIDIA-ISAAC-ROS/.github/release-4.2/resources/isaac_ros_docs/repositories_and_packages/isaac_ros_apriltag/isaac_ros_apriltag_nodegraph.png/"><img alt="image" src="https://media.githubusercontent.com/media/NVIDIA-ISAAC-ROS/.github/release-4.2/resources/isaac_ros_docs/repositories_and_packages/isaac_ros_apriltag/isaac_ros_apriltag_nodegraph.png/" width="800px"/></a></div>
+<div align="center"><a class="reference internal image-reference" href="https://media.githubusercontent.com/media/NVIDIA-ISAAC-ROS/.github/release-4.3/resources/isaac_ros_docs/repositories_and_packages/isaac_ros_apriltag/isaac_ros_apriltag_nodegraph.png/"><img alt="image" src="https://media.githubusercontent.com/media/NVIDIA-ISAAC-ROS/.github/release-4.3/resources/isaac_ros_docs/repositories_and_packages/isaac_ros_apriltag/isaac_ros_apriltag_nodegraph.png/" width="800px"/></a></div>
 
 A common graph of nodes connects from an input camera through rectify
 and resize to AprilTag. Rectify warps the input camera image into a
@@ -28,7 +28,7 @@ the application. Each of the green nodes in the above diagram is NVIDIA
 accelerated, allowing for a high-performance compute graph from camera
 input to AprilTag detection.
 
-<div align="center"><a class="reference internal image-reference" href="https://media.githubusercontent.com/media/NVIDIA-ISAAC-ROS/.github/release-4.2/resources/isaac_ros_docs/repositories_and_packages/isaac_ros_apriltag/apriltagdetection_message_illustration.png/"><img alt="image" src="https://media.githubusercontent.com/media/NVIDIA-ISAAC-ROS/.github/release-4.2/resources/isaac_ros_docs/repositories_and_packages/isaac_ros_apriltag/apriltagdetection_message_illustration.png/" width="700px"/></a></div>
+<div align="center"><a class="reference internal image-reference" href="https://media.githubusercontent.com/media/NVIDIA-ISAAC-ROS/.github/release-4.3/resources/isaac_ros_docs/repositories_and_packages/isaac_ros_apriltag/apriltagdetection_message_illustration.png/"><img alt="image" src="https://media.githubusercontent.com/media/NVIDIA-ISAAC-ROS/.github/release-4.3/resources/isaac_ros_docs/repositories_and_packages/isaac_ros_apriltag/apriltagdetection_message_illustration.png/" width="700px"/></a></div>
 
 As illustrated above, detections are provided in an output array for the
 number of AprilTag detections in the input image. Each entry in the
@@ -36,19 +36,27 @@ array contains the ID (two-dimensional bar code) for the AprilTag, the
 four corners ((x0, y0), (x1, y1), (x2, y2), (x3, y3)) and center (x, y)
 of the input image, and the pose of the AprilTag.
 
-> [!Note]
-> This package provides the option through the `backend` parameter to leverage either the GPU or
-> CPU on all NVIDIA-powered platforms or PVA on Jetson devices for AprilTag detection.
+This package is a NVIDIA-accelerated drop-in replacement for
+the [CPU version of ROS AprilTag](https://github.com/christianrauch/apriltag_ros).
+For more information, including the paper and the reference
+CPU implementation, refer to the [AprilTag repository](https://github.com/AprilRobotics/apriltag).
 
-> [!Note]
-> This package is a NVIDIA-accelerated drop-in replacement for
-> the [CPU version of ROS
-> AprilTag](https://github.com/christianrauch/apriltag_ros)
+The `backend` parameter to allows you to leverage either the CPU,
+GPU on all NVIDIA-powered platforms, or PVA on Jetson devices for AprilTag detection. Below is the table of supported tag families by backend.
 
-> [!Note]
-> For more information, including the paper and the reference
-> CPU implementation, refer to the [AprilTag
-> repository](https://github.com/AprilRobotics/apriltag)
+#### AprilTag Tag Families Supported by Backend
+
+| Tag Family      | CUDA   | CPU   | PVA   |
+|-----------------|--------|-------|-------|
+| `tag36h11`      | ✓      | ✓     | ✓     |
+| `tag16h5`       |        | ✓     | ✓     |
+| `tag25h9`       |        | ✓     | ✓     |
+| `tag36h10`      |        | ✓     | ✓     |
+| `circle21h7`    |        | ✓     | ✓     |
+| `circle49h12`   |        | ✓     | ✓     |
+| `custom48h12`   |        | ✓     | ✓     |
+| `standard41h12` |        | ✓     | ✓     |
+| `standard52h13` |        | ✓     | ✓     |
 
 ## Isaac ROS NITROS Acceleration
 
@@ -58,8 +66,8 @@ This package is powered by [NVIDIA Isaac Transport for ROS (NITROS)](https://dev
 
 | Sample Graph<br/><br/>                                                                                                                                                           | Input Size<br/><br/>   | AGX Thor T5000<br/><br/>                                                                                                                                                 | AGX Thor T4000<br/><br/>                                                                                                                                                  | DGX Spark<br/><br/>                                                                                                                                                       | x86_64 w/ RTX 5090<br/><br/>                                                                                                                                             |
 |----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [AprilTag Node](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.2/benchmarks/isaac_ros_apriltag_benchmark/scripts/isaac_ros_apriltag_node.py)<br/><br/>   | 720p<br/><br/>         | [385 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.2/results/isaac_ros_apriltag_node-agx_thor.json)<br/><br/><br/>2.9 ms @ 30Hz<br/><br/>  | [280 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.2/results/isaac_ros_apriltag_node-thor-t4000.json)<br/><br/><br/>11 ms @ 30Hz<br/><br/>  | [462 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.2/results/isaac_ros_apriltag_node-dgx_spark.json)<br/><br/><br/>2.4 ms @ 30Hz<br/><br/>  | [596 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.2/results/isaac_ros_apriltag_node-x86-5090.json)<br/><br/><br/>2.0 ms @ 30Hz<br/><br/>  |
-| [AprilTag Graph](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.2/benchmarks/isaac_ros_apriltag_benchmark/scripts/isaac_ros_apriltag_graph.py)<br/><br/> | 720p<br/><br/>         | [354 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.2/results/isaac_ros_apriltag_graph-agx_thor.json)<br/><br/><br/>5.2 ms @ 30Hz<br/><br/> | [273 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.2/results/isaac_ros_apriltag_graph-thor-t4000.json)<br/><br/><br/>15 ms @ 30Hz<br/><br/> | [546 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.2/results/isaac_ros_apriltag_graph-dgx_spark.json)<br/><br/><br/>3.9 ms @ 30Hz<br/><br/> | [596 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.2/results/isaac_ros_apriltag_graph-x86-5090.json)<br/><br/><br/>2.8 ms @ 30Hz<br/><br/> |
+| [AprilTag Node](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.3/benchmarks/isaac_ros_apriltag_benchmark/scripts/isaac_ros_apriltag_node.py)<br/><br/>   | 720p<br/><br/>         | [385 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.3/results/isaac_ros_apriltag_node-agx_thor.json)<br/><br/><br/>2.9 ms @ 30Hz<br/><br/>  | [280 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.3/results/isaac_ros_apriltag_node-thor-t4000.json)<br/><br/><br/>11 ms @ 30Hz<br/><br/>  | [462 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.3/results/isaac_ros_apriltag_node-dgx_spark.json)<br/><br/><br/>2.4 ms @ 30Hz<br/><br/>  | [596 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.3/results/isaac_ros_apriltag_node-x86-5090.json)<br/><br/><br/>2.0 ms @ 30Hz<br/><br/>  |
+| [AprilTag Graph](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.3/benchmarks/isaac_ros_apriltag_benchmark/scripts/isaac_ros_apriltag_graph.py)<br/><br/> | 720p<br/><br/>         | [354 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.3/results/isaac_ros_apriltag_graph-agx_thor.json)<br/><br/><br/>5.2 ms @ 30Hz<br/><br/> | [273 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.3/results/isaac_ros_apriltag_graph-thor-t4000.json)<br/><br/><br/>15 ms @ 30Hz<br/><br/> | [546 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.3/results/isaac_ros_apriltag_graph-dgx_spark.json)<br/><br/><br/>3.9 ms @ 30Hz<br/><br/> | [596 fps](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_benchmark/blob/release-4.3/results/isaac_ros_apriltag_graph-x86-5090.json)<br/><br/><br/>2.8 ms @ 30Hz<br/><br/> |
 
 ---
 
@@ -79,4 +87,4 @@ Please visit the [Isaac ROS Documentation](https://nvidia-isaac-ros.github.io/re
 
 ## Latest
 
-Update 2026-02-19: Support for DGX Spark and JetPack 7.1
+Update 2026-03-23: Explicitly lists supported AprilTag tag families by backend (CUDA, CPU, PVA) in package documentation

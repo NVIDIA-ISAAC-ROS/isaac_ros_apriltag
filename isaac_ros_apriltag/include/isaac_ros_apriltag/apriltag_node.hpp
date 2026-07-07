@@ -35,8 +35,8 @@
 #include "message_filters/synchronizer.h"
 #include "message_filters/sync_policies/exact_time.h"
 
-#include "isaac_ros_managed_nitros/managed_nitros_message_filters_subscriber.hpp"
-#include "isaac_ros_nitros_image_type/nitros_image_view.hpp"
+#include "isaac_ros_nitros_image_type/nitros_image.hpp"
+#include "isaac_ros_nitros/types/nitros_type_message_filter_traits.hpp"
 
 namespace nvidia
 {
@@ -68,10 +68,7 @@ private:
   const uint32_t backends_;
 
   // Subscribers
-  template<typename T>
-  using NitrosMessageFilterSubscriber = nvidia::isaac_ros::nitros::message_filters::Subscriber<T>;
-
-  NitrosMessageFilterSubscriber<nvidia::isaac_ros::nitros::NitrosImageView> image_sub_;
+  message_filters::Subscriber<nvidia::isaac_ros::nitros::NitrosImage> image_sub_;
   message_filters::Subscriber<sensor_msgs::msg::CameraInfo> camera_info_sub_;
 
   using ExactPolicy = message_filters::sync_policies::ExactTime<

@@ -38,15 +38,15 @@ foreach(PREFIX_PATH IN LISTS AMENT_INDEX_PREFIX_PATHS)
     endif()
 endforeach()
 message( STATUS "Found cuapriltags at ${CUAPRILTAGS}")
-add_library(cuapriltags STATIC IMPORTED)
-set_property(TARGET cuapriltags PROPERTY IMPORTED_LOCATION ${CUAPRILTAGS}/lib/libcuapriltags.a)
-target_include_directories(cuapriltags INTERFACE "${CUAPRILTAGS}/cuapriltags")
+add_library(isaac_ros_apriltag_cuapriltags STATIC IMPORTED)
+set_property(TARGET isaac_ros_apriltag_cuapriltags PROPERTY IMPORTED_LOCATION ${CUAPRILTAGS}/lib/libcuapriltags.a)
+target_include_directories(isaac_ros_apriltag_cuapriltags INTERFACE "${CUAPRILTAGS}/cuapriltags")
 
 # AprilTagNode
 ament_auto_add_library(apriltag_node SHARED src/apriltag_node.cpp)
 rclcpp_components_register_nodes(apriltag_node "nvidia::isaac_ros::apriltag::AprilTagNode")
 set(node_plugins "${node_plugins}nvidia::isaac_ros::apriltag::AprilTagNode;$<TARGET_FILE:apriltag_node>\n")
-target_link_libraries(apriltag_node Eigen3::Eigen cuapriltags)
+target_link_libraries(apriltag_node Eigen3::Eigen isaac_ros_apriltag_cuapriltags)
 set_target_properties(apriltag_node PROPERTIES
   BUILD_WITH_INSTALL_RPATH TRUE
   BUILD_RPATH_USE_ORIGIN TRUE

@@ -36,9 +36,9 @@ def get_backends_id(backends_flag):
 
 BACKEND_FLAGS = ['CPU', 'CUDA']
 
-
-# Include PVA backend on Jetson Orin
-if os.path.isfile('/etc/nv_tegra_release'):
+compatible_path = pathlib.Path('/proc/device-tree/compatible')
+is_thor = compatible_path.is_file() and b'tegra264' in compatible_path.read_bytes()
+if os.path.isfile('/etc/nv_tegra_release') and not is_thor:
     BACKEND_FLAGS.append('PVA')
 
 

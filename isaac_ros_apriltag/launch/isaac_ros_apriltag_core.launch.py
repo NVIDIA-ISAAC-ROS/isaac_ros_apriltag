@@ -76,9 +76,10 @@ def generate_launch_description():
         namespace='',
         executable='component_container_mt',
         composable_node_descriptions=IsaacROSAprilTagLaunchFragment
-        .get_composable_nodes().values(),
+        .get_composable_nodes({}).values(),
         output='screen'
     )
 
     return launch.LaunchDescription(
-        [apriltag_container] + IsaacROSAprilTagLaunchFragment.get_launch_actions().values())
+        [apriltag_container] +
+        list(IsaacROSAprilTagLaunchFragment.get_launch_actions({}).values()))

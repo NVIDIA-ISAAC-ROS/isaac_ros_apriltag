@@ -29,7 +29,7 @@ ament_auto_find_build_dependencies()
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
 # cuapriltags (resolve path from ament_index)
-ament_index_get_resource(CUAPRILTAGS_RELATIVE_PATH cuapriltags isaac_ros_nitros)
+ament_index_get_resource(CUAPRILTAGS_RELATIVE_PATH cuapriltags cuapriltags_vendor)
 ament_index_get_prefix_path(AMENT_INDEX_PREFIX_PATHS)
 foreach(PREFIX_PATH IN LISTS AMENT_INDEX_PREFIX_PATHS)
     if(EXISTS "${PREFIX_PATH}/${CUAPRILTAGS_RELATIVE_PATH}")

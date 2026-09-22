@@ -32,6 +32,8 @@
 #include <utility>
 
 #include "cuAprilTags.h"
+#include "cuda_buffer/cuda_buffer_api.hpp"
+#include "isaac_ros_common/qos.hpp"
 #include "isaac_ros_vpi_utils/vpi_utilities.hpp"
 
 namespace nvidia
@@ -98,10 +100,10 @@ struct AprilTagNode::AprilTagImpl
 
   virtual void Initialize(
     const AprilTagNode & node,
-    const nvidia::isaac_ros::nitros::NitrosImage::ConstSharedPtr & nitros_image,
+    const sensor_msgs::msg::Image::ConstSharedPtr & image,
     const sensor_msgs::msg::CameraInfo::ConstSharedPtr & camera_info)
   {
-    (void)nitros_image;
+    (void)image;
     (void)camera_info;
     assert(!IsInitialized() && "Already initialized.");
 
@@ -119,7 +121,7 @@ struct AprilTagNode::AprilTagImpl
 
   virtual void OnCameraFrame(
     const AprilTagNode & node,
-    const nvidia::isaac_ros::nitros::NitrosImage::ConstSharedPtr & nitros_image,
+    const sensor_msgs::msg::Image::ConstSharedPtr & image,
     const sensor_msgs::msg::CameraInfo::ConstSharedPtr & camera_info) = 0;
 
   bool initialized_{false};
@@ -141,7 +143,7 @@ struct AprilTagNode::VPIAprilTagImpl : AprilTagNode::AprilTagImpl
   VPIImage input_image_{};
   VPIImage input_monochrome_image_{};
 
-  // CUDA stream for NitrosImage read handle synchronization
+  // CUDA stream for rosidl::Buffer read handle synchronization
   cudaStream_t cuda_stream_{};
 
   geometry_msgs::msg::Transform ToTransformMsg(const VPIPose & pose)
@@ -192,10 +194,10 @@ struct AprilTagNode::VPIAprilTagImpl : AprilTagNode::AprilTagImpl
 
   void Initialize(
     const AprilTagNode & node,
-    const nvidia::isaac_ros::nitros::NitrosImage::ConstSharedPtr & nitros_image,
+    const sensor_msgs::msg::Image::ConstSharedPtr & image,
     const sensor_msgs::msg::CameraInfo::ConstSharedPtr & camera_info) override
   {
-    AprilTagNode::AprilTagImpl::Initialize(node, nitros_image, camera_info);
+    AprilTagNode::AprilTagImpl::Initialize(node, image, camera_info);
 
     try {
       CHECK_VPI_STATUS(vpiStreamCreate(node.backends_ | VPI_BACKEND_CPU | VPI_BACKEND_CUDA,
@@ -204,7 +206,7 @@ struct AprilTagNode::VPIAprilTagImpl : AprilTagNode::AprilTagImpl
       RCLCPP_ERROR(node.get_logger(), "Error while initializing: %s", e.what());
     }
 
-    // Create CUDA stream for NitrosImage read handle synchronization
+    // Create CUDA stream for rosidl::Buffer read handle synchronization
     cudaStreamCreate(&cuda_stream_);
 
     CHECK_VPI_STATUS(vpiInitAprilTagDecodeParams(&params_));
@@ -234,15 +236,15 @@ struct AprilTagNode::VPIAprilTagImpl : AprilTagNode::AprilTagImpl
     // Input image placeholder
     VPIImageData * data = &input_image_data_;
     data->bufferType = VPI_IMAGE_BUFFER_CUDA_PITCH_LINEAR;
-    data->buffer.pitch.format = ToVPIImageFormatFromROSEncoding(nitros_image->encoding);
+    data->buffer.pitch.format = ToVPIImageFormatFromROSEncoding(image->encoding);
     data->buffer.pitch.numPlanes = 1;
-    auto read_handle = nitros_image->get_read_handle(cuda_stream_);
+    auto read_handle = cuda_buffer_backend::from_input_buffer(image->data, cuda_stream_);
     data->buffer.pitch.planes[0].pBase =
       const_cast<unsigned char *>(read_handle.get_ptr());
     data->buffer.pitch.planes[0].height = camera_info->height;
     data->buffer.pitch.planes[0].width = camera_info->width;
     data->buffer.pitch.planes[0].pixelType = VPI_PIXEL_TYPE_DEFAULT;
-    data->buffer.pitch.planes[0].pitchBytes = nitros_image->step;
+    data->buffer.pitch.planes[0].pitchBytes = image->step;
     data->buffer.pitch.planes[0].offsetBytes = 0;
     CHECK_VPI_STATUS(vpiImageCreateWrapper(data, nullptr, VPI_BACKEND_CUDA, &input_image_));
 
@@ -250,7 +252,7 @@ struct AprilTagNode::VPIAprilTagImpl : AprilTagNode::AprilTagImpl
       node.get_logger(), "Initialized with input image (%dx%d), encoding=%s, pitch=%d",
       data->buffer.pitch.planes[0].width,
       data->buffer.pitch.planes[0].height,
-      nitros_image->encoding.c_str(),
+      image->encoding.c_str(),
       data->buffer.pitch.planes[0].pitchBytes);
 
     // Input monochrome image
@@ -262,12 +264,12 @@ struct AprilTagNode::VPIAprilTagImpl : AprilTagNode::AprilTagImpl
 
   void OnCameraFrame(
     const AprilTagNode & node,
-    const nvidia::isaac_ros::nitros::NitrosImage::ConstSharedPtr & nitros_image,
+    const sensor_msgs::msg::Image::ConstSharedPtr & image,
     const sensor_msgs::msg::CameraInfo::ConstSharedPtr & camera_info) override
   {
     // Update input image buffer in wrapper
     // ReadHandle must stay alive until vpiStreamSync to ensure proper CUDA event synchronization
-    auto read_handle = nitros_image->get_read_handle(cuda_stream_);
+    auto read_handle = cuda_buffer_backend::from_input_buffer(image->data, cuda_stream_);
     input_image_data_.buffer.pitch.planes[0].pBase =
       const_cast<unsigned char *>(read_handle.get_ptr());
     CHECK_VPI_STATUS(vpiImageSetWrapper(input_image_, &input_image_data_))
@@ -397,7 +399,6 @@ struct AprilTagNode::CUAprilTagImpl : AprilTagNode::AprilTagImpl
   // CUDA stream
   cudaStream_t stream_ = {};
 
-
   cuAprilTagsFamily ToCuAprilTagsFamily(const VPIAprilTagFamily & family)
   {
     switch (family) {
@@ -433,10 +434,10 @@ struct AprilTagNode::CUAprilTagImpl : AprilTagNode::AprilTagImpl
 
   void Initialize(
     const AprilTagNode & node,
-    const nvidia::isaac_ros::nitros::NitrosImage::ConstSharedPtr & nitros_image,
+    const sensor_msgs::msg::Image::ConstSharedPtr & image,
     const sensor_msgs::msg::CameraInfo::ConstSharedPtr & camera_info) override
   {
-    AprilTagNode::AprilTagImpl::Initialize(node, nitros_image, camera_info);
+    AprilTagNode::AprilTagImpl::Initialize(node, image, camera_info);
 
     // Get camera intrinsics
     const double * k = camera_info->k.data();
@@ -462,28 +463,28 @@ struct AprilTagNode::CUAprilTagImpl : AprilTagNode::AprilTagImpl
 
   void OnCameraFrame(
     const AprilTagNode & node,
-    const nvidia::isaac_ros::nitros::NitrosImage::ConstSharedPtr & nitros_image,
+    const sensor_msgs::msg::Image::ConstSharedPtr & image,
     const sensor_msgs::msg::CameraInfo::ConstSharedPtr & camera_info) override
   {
     // Check that the input image is of the expected encoding
-    if (nitros_image->encoding != "rgb8" && nitros_image->encoding != "bgr8") {
+    if (image->encoding != "rgb8" && image->encoding != "bgr8") {
       RCLCPP_ERROR(
         node.get_logger(),
         "Unsupported image encoding: %s (only 'rgb8' or 'bgr8' supported)",
-        nitros_image->encoding.c_str());
+        image->encoding.c_str());
       throw std::runtime_error(
               "cuAprilTags detector only supports 'rgb8' or 'bgr8' image input");
     }
 
     // CUDA buffers to store the input image.
     // ReadHandle must stay alive through cuAprilTagsDetect for CUDA event synchronization
-    auto read_handle = nitros_image->get_read_handle(stream_);
+    auto read_handle = cuda_buffer_backend::from_input_buffer(image->data, stream_);
     cuAprilTagsImageInput_t input_image;
-    input_image.width = nitros_image->width;
-    input_image.height = nitros_image->height;
+    input_image.width = image->width;
+    input_image.height = image->height;
     input_image.dev_ptr =
       const_cast<uchar3 *>(reinterpret_cast<const uchar3 *>(read_handle.get_ptr()));
-    input_image.pitch = nitros_image->step;
+    input_image.pitch = image->step;
 
     // Perform detection
     uint32_t num_detections;
@@ -606,20 +607,29 @@ AprilTagNode::AprilTagNode(const rclcpp::NodeOptions & options)
     std::bind(
       &AprilTagNode::CameraImageCallback, this, std::placeholders::_1,
       std::placeholders::_2));
-  image_sub_.subscribe(this, "image");
-  camera_info_sub_.subscribe(this, "camera_info");
+
+  // Accept GPU-backed image buffers (e.g. CUDA) while remaining compatible
+  // with CPU-backed publishers; from_input_buffer promotes CPU buffers as needed.
+  rclcpp::SubscriptionOptions image_sub_options;
+  image_sub_options.acceptable_buffer_backends = "any";
+  const auto image_qos =
+    ::isaac_ros::common::AddQosParameter(*this, "SENSOR_DATA", "image_qos");
+  const auto camera_info_qos =
+    ::isaac_ros::common::AddQosParameter(*this, "SENSOR_DATA", "camera_info_qos");
+  image_sub_.subscribe(this, "image", image_qos, image_sub_options);
+  camera_info_sub_.subscribe(this, "camera_info", camera_info_qos);
 }
 
 void AprilTagNode::CameraImageCallback(
-  const nvidia::isaac_ros::nitros::NitrosImage::ConstSharedPtr & nitros_image,
+  const sensor_msgs::msg::Image::ConstSharedPtr & image,
   const sensor_msgs::msg::CameraInfo::ConstSharedPtr & camera_info
 )
 {
   if (!impl_->IsInitialized()) {
-    impl_->Initialize(*this, nitros_image, camera_info);
+    impl_->Initialize(*this, image, camera_info);
   }
 
-  impl_->OnCameraFrame(*this, nitros_image, camera_info);
+  impl_->OnCameraFrame(*this, image, camera_info);
 }
 
 AprilTagNode::~AprilTagNode() = default;

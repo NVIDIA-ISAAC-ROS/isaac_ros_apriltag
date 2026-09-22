@@ -33,8 +33,9 @@ from sensor_msgs.msg import CameraInfo, Image
 
 BACKEND_FLAGS = ['CPU']
 
-# Include PVA backend on Jetson Orin
-if os.path.isfile('/etc/nv_tegra_release'):
+compatible_path = pathlib.Path('/proc/device-tree/compatible')
+is_thor = compatible_path.is_file() and b'tegra264' in compatible_path.read_bytes()
+if os.path.isfile('/etc/nv_tegra_release') and not is_thor:
     BACKEND_FLAGS.append('PVA')
 
 TAG_DETECTION_TOPICS = [f'tag_detections_{b}' for b in BACKEND_FLAGS]

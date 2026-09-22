@@ -29,14 +29,12 @@
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "isaac_ros_apriltag_interfaces/msg/april_tag_detection_array.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
-#include "tf2_ros/transform_broadcaster.h"
+#include "sensor_msgs/msg/image.hpp"
+#include "tf2_ros/transform_broadcaster.hpp"
 
-#include "message_filters/subscriber.h"
-#include "message_filters/synchronizer.h"
-#include "message_filters/sync_policies/exact_time.h"
-
-#include "isaac_ros_nitros_image_type/nitros_image.hpp"
-#include "isaac_ros_nitros/types/nitros_type_message_filter_traits.hpp"
+#include "message_filters/subscriber.hpp"
+#include "message_filters/synchronizer.hpp"
+#include "message_filters/sync_policies/exact_time.hpp"
 
 namespace nvidia
 {
@@ -56,7 +54,7 @@ public:
 
 private:
   void CameraImageCallback(
-    const nvidia::isaac_ros::nitros::NitrosImage::ConstSharedPtr & nitros_image,
+    const sensor_msgs::msg::Image::ConstSharedPtr & image,
     const sensor_msgs::msg::CameraInfo::ConstSharedPtr & camera_info
   );
 
@@ -68,11 +66,11 @@ private:
   const uint32_t backends_;
 
   // Subscribers
-  message_filters::Subscriber<nvidia::isaac_ros::nitros::NitrosImage> image_sub_;
+  message_filters::Subscriber<sensor_msgs::msg::Image> image_sub_;
   message_filters::Subscriber<sensor_msgs::msg::CameraInfo> camera_info_sub_;
 
   using ExactPolicy = message_filters::sync_policies::ExactTime<
-    nvidia::isaac_ros::nitros::NitrosImage,
+    sensor_msgs::msg::Image,
     sensor_msgs::msg::CameraInfo
   >;
   message_filters::Synchronizer<ExactPolicy> camera_image_sync_;

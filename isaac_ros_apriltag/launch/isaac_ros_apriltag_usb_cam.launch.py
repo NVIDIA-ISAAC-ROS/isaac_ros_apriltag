@@ -23,6 +23,7 @@ from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import ComposableNodeContainer
 from launch_ros.descriptions import ComposableNode
+from launch_ros.parameter_descriptions import ParameterValue
 
 
 def generate_launch_description():
@@ -35,10 +36,15 @@ def generate_launch_description():
             'camera_height',
             default_value='720',
             description='The USB camera input height.'),
+        DeclareLaunchArgument(
+            'camera_info_url',
+            default_value='package://isaac_ros_apriltag/config/camera_info.yaml',
+            description='URL of the USB camera calibration file.'),
     ]
 
-    camera_width = LaunchConfiguration('camera_width')
-    camera_height = LaunchConfiguration('camera_height')
+    camera_width = ParameterValue(LaunchConfiguration('camera_width'), value_type=int)
+    camera_height = ParameterValue(LaunchConfiguration('camera_height'), value_type=int)
+    camera_info_url = ParameterValue(LaunchConfiguration('camera_info_url'), value_type=str)
 
     rectify_node = ComposableNode(
         package='isaac_ros_image_proc',
@@ -71,7 +77,11 @@ def generate_launch_description():
         package='usb_cam',
         plugin='usb_cam::UsbCamNode',
         name='usb_cam',
-        parameters=[usb_cam_params_path]
+        parameters=[usb_cam_params_path, {
+            'image_width': camera_width,
+            'image_height': camera_height,
+            'camera_info_url': camera_info_url,
+        }]
     )
 
     apriltag_container = ComposableNodeContainer(
